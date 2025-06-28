@@ -207,11 +207,23 @@
     }
 
     window.addEventListener("DOMContentLoaded", () => {
-      const saved = localStorage.getItem("winch_inputs");
-      if (saved) {
-        document.getElementById("output").textContent = saved;
+  const saved = localStorage.getItem("winch_inputs");
+  if (saved) {
+    const inputs = JSON.parse(saved);
+    document.getElementById("output").textContent = saved;
+
+    for (const key in inputs) {
+      const field = document.getElementById(key);
+      if (field) {
+        field.value = inputs[key];
       }
-    });
+    }
+
+    // Auto-run layer calculation with restored inputs
+    const layerResults = calculateDrumLayers(inputs);
+    document.getElementById("layers").textContent = JSON.stringify(layerResults, null, 2);
+  }
+});
   </script>
 
 </body>
