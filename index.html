@@ -110,8 +110,8 @@
   <h2>Saved Inputs</h2>
   <pre id="output"></pre>
 
-  <h2>Calculation Results</h2>
-  <pre id="results"></pre>
+  <h2>Drum Layer Calculation Results</h2>
+  <pre id="layers"></pre>
 
   <script>
     document.getElementById("inputForm").addEventListener("submit", function(event) {
@@ -135,40 +135,77 @@
         sel_hyd_mech_efficiency: Number(document.getElementById("sel_hyd_mech_efficiency").value)
       };
 
-      // Save to localStorage
       localStorage.setItem("winch_inputs", JSON.stringify(inputs));
       document.getElementById("output").textContent = JSON.stringify(inputs, null, 2);
 
-      // Perform calculations
-      const results = runCalculations(inputs);
-      document.getElementById("results").textContent = JSON.stringify(results, null, 2);
-
-      console.log("Saved inputs:", inputs);
+      const layerResults = calculateDrumLayers(inputs);
+      document.getElementById("layers").textContent = JSON.stringify(layerResults, null, 2);
     });
 
-    function runCalculations(inputs) {
-      const u = math.unit;  // shortcut for mathjs units
-      const results = {};
+    function calculateDrumLayers(inputs) {
+      const u = math.unit;
 
-      try {
-        const swl = u(inputs.req_swl, 'kgf');
-        const speed = u(inputs.req_speed, 'm/min');
-        const eff = inputs.sel_hyd_mech_efficiency;
+      const drumCoreDia = u(inputs.sel_drum_core_dia, 'inch');
+      const lebusThickness = u(inputs.sel_drum_lebus_thickness, 'inch');
+      const cableDia = u(inputs.sel_umb_dia, 'mm').to('inch');
+      const flangeToFlange = u(inputs.sel_drum_flange_to_flange, 'inch');
+      const flangeDia = u(inputs.sel_drum_flange_dia, 'inch');
+      const cableLength = u(inputs.sel_cable_length, 'm');
+      const wrapsPerLayerInput = inputs.sel_drum_wraps_per_layer;
 
-        const maxTension = swl.divide(eff);                    // kgf
-        const rawPower = maxTension.multiply(speed);          // kgf·m/min
-        const powerKW = rawPower.to('kW');
+      const payloadWeight = u(inputs.sel_payload_weight, 'kgf');
+      const cableWeight = u(inputs.sel_umb_weight, 'lbf/ft');
 
-        results.max_tension = maxTension.toString();          // "xxxx kgf"
-        results.required_power = powerKW.toString();          // "xxx kW"
-      } catch (err) {
-        results.error = err.message;
+      const reqFreeFlange = cableDia.multiply(2.5);
+      const actualFreeFlange = flangeDia.divide(2).subtract(
+        drumCoreDia.divide(2).add(lebusThickness)
+      );
+
+      const usableWidth = flangeToFlange;
+      const wrapsPerLayer = wrapsPerLayerInput > 0
+        ? wrapsPerLayerInput
+        : Math.floor(usableWidth.toNumber('inch') / cableDia.toNumber('inch'));
+
+      const layers = [];
+      let remainingCable = cableLength;
+      let accLength = u(0, 'm');
+      let layer = 0;
+      let currentRadius = drumCoreDia.divide(2);
+      const cableDiaInch = cableDia.to('inch');
+
+      while (remainingCable.toNumber('m') > 0 && currentRadius.multiply(2).lt(flangeDia)) {
+        const layerRadius = currentRadius.add(cableDiaInch.multiply(0.5));
+        const circumference = layerRadius.multiply(2 * Math.PI);
+        const cablePerWrap = circumference.to('m');
+        const layerLength = cablePerWrap.multiply(wrapsPerLayer);
+        const layerLengthLimited = math.min(layerLength, remainingCable);
+        accLength = accLength.add(layerLengthLimited);
+        remainingCable = remainingCable.subtract(layerLengthLimited);
+
+        const tension = payloadWeight.add(
+          accLength.multiply(cableWeight.to('kgf/m'))
+        ).to('kgf');
+
+        layers.push({
+          layer: layer + 1,
+          dia_inch: layerRadius.multiply(2).to('inch').toNumber(),
+          cable_on_drum_m: accLength.toNumber('m'),
+          cable_in_water_m: accLength.toNumber('m'),
+          operating_tension_kgf: tension.toNumber('kgf')
+        });
+
+        currentRadius = layerRadius;
+        layer++;
       }
 
-      return results;
+      return {
+        wrapsPerLayer,
+        reqFreeFlange: reqFreeFlange.to('inch').toString(),
+        actualFreeFlange: actualFreeFlange.to('inch').toString(),
+        layers
+      };
     }
 
-    // Load saved inputs on page load
     window.addEventListener("DOMContentLoaded", () => {
       const saved = localStorage.getItem("winch_inputs");
       if (saved) {
