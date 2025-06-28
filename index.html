@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>Winch Input Form</title>
+
+  <!-- math.js for unit-aware calculations -->
+  <script src="https://cdn.jsdelivr.net/npm/mathjs@11.8.0/lib/browser/math.min.js"></script>
+
   <style>
     body {
       font-family: sans-serif;
@@ -100,17 +104,20 @@
       <input type="number" step="0.01" id="sel_hyd_mech_efficiency" placeholder="0.85">
     </label>
 
-    <button type="submit">Save</button>
+    <button type="submit">Save & Calculate</button>
   </form>
 
-  <h2>Saved Values</h2>
+  <h2>Saved Inputs</h2>
   <pre id="output"></pre>
+
+  <h2>Calculation Results</h2>
+  <pre id="results"></pre>
 
   <script>
     document.getElementById("inputForm").addEventListener("submit", function(event) {
       event.preventDefault();
 
-      const data = {
+      const inputs = {
         winch_type: document.getElementById("winch_type").value,
         req_swl: Number(document.getElementById("req_swl").value),
         req_speed: Number(document.getElementById("req_speed").value),
@@ -123,21 +130,45 @@
         sel_drum_flange_to_flange: Number(document.getElementById("sel_drum_flange_to_flange").value),
         sel_drum_wraps_per_layer: Number(document.getElementById("sel_drum_wraps_per_layer").value),
         sel_payload_weight: Number(document.getElementById("sel_payload_weight").value),
-        sel_hyd_pwr: Number(document.getElementById("sel_hyd_pwr").value),
+        sel_hyd_pwr: Number(document.getElementById("sel_pwr").value),
         sel_hyd_sys_press: Number(document.getElementById("sel_hyd_sys_press").value),
         sel_hyd_mech_efficiency: Number(document.getElementById("sel_hyd_mech_efficiency").value)
       };
 
-      // Save to localStorage as JSON
-      localStorage.setItem("winch_inputs", JSON.stringify(data));
+      // Save to localStorage
+      localStorage.setItem("winch_inputs", JSON.stringify(inputs));
+      document.getElementById("output").textContent = JSON.stringify(inputs, null, 2);
 
-      // Display it back on the page
-      document.getElementById("output").textContent = JSON.stringify(data, null, 2);
+      // Perform calculations
+      const results = runCalculations(inputs);
+      document.getElementById("results").textContent = JSON.stringify(results, null, 2);
 
-      console.log("Saved inputs:", data);
+      console.log("Saved inputs:", inputs);
     });
 
-    // Optional: load saved data on page load
+    function runCalculations(inputs) {
+      const u = math.unit;  // shortcut for mathjs units
+      const results = {};
+
+      try {
+        const swl = u(inputs.req_swl, 'kgf');
+        const speed = u(inputs.req_speed, 'm/min');
+        const eff = inputs.sel_hyd_mech_efficiency;
+
+        const maxTension = swl.divide(eff);                    // kgf
+        const rawPower = maxTension.multiply(speed);          // kgf·m/min
+        const powerKW = rawPower.to('kW');
+
+        results.max_tension = maxTension.toString();          // "xxxx kgf"
+        results.required_power = powerKW.toString();          // "xxx kW"
+      } catch (err) {
+        results.error = err.message;
+      }
+
+      return results;
+    }
+
+    // Load saved inputs on page load
     window.addEventListener("DOMContentLoaded", () => {
       const saved = localStorage.getItem("winch_inputs");
       if (saved) {
