@@ -1,24 +1,73 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Hello App</title>
- 
+  <meta charset="UTF-8">
+  <title>Calculation App</title>
   <style>
-    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
-    button { padding: 10px 20px; font-size: 16px; }
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 40px;
+      background-color: #f7f7f7;
+    }
+    form {
+      display: inline-block;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input {
+      padding: 8px;
+      width: 200px;
+      margin-bottom: 15px;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #output {
+      margin-top: 30px;
+      font-size: 18px;
+    }
   </style>
 </head>
 <body>
-  <h1 id="greeting">Hello, Wes!</h1>
-  <button onclick="changeName()">Change Name</button>
+
+  <h1>Calculation Setup</h1>
+
+  <form id="inputForm">
+    <label for="username">Name:</label><br>
+    <input type="text" id="username" placeholder="Enter your name" required><br><br>
+
+    <label for="value1">Enter a number:</label><br>
+    <input type="number" id="value1" placeholder="e.g. 42" required><br><br>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <p id="output"></p>
 
   <script>
-    function changeName() {
-      const name = prompt("What's your name?");
-      if (name) {
-        document.getElementById("greeting").textContent = `Hello, ${name}!`;
+    document.getElementById("inputForm").addEventListener("submit", function(event) {
+      event.preventDefault(); // prevent page refresh
+
+      const name = document.getElementById("username").value;
+      const number = parseFloat(document.getElementById("value1").value);
+
+      if (!isNaN(number)) {
+        const message = `Hello, ${name}! You entered the number ${number}.`;
+        document.getElementById("output").textContent = message;
+
+        // Ready for later use
+        console.log("Stored values:", { name, number });
+      } else {
+        document.getElementById("output").textContent = "Please enter a valid number.";
       }
-    }
+    });
   </script>
+
 </body>
 </html>
