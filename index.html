@@ -45,51 +45,51 @@
 
   <form id="inputForm">
     <label>Winch Type (electric or hydraulic)
-      <input type="text" id="winch_type" placeholder="electric">
+      <input type="text" id="winch_type" placeholder="electric" required>
     </label>
 
     <label>Safe Working Load (kgf)
-      <input type="number" step="any" id="req_swl" placeholder="13000">
+      <input type="number" step="any" id="req_swl" placeholder="13000" required>
     </label>
 
     <label>Required Line Speed (m/min)
-      <input type="number" step="any" id="req_speed" placeholder="90">
+      <input type="number" step="any" id="req_speed" placeholder="90" required>
     </label>
 
     <label>Cable Diameter (mm)
-      <input type="number" step="any" id="sel_umb_dia" placeholder="41">
+      <input type="number" step="any" id="sel_umb_dia" placeholder="41" required>
     </label>
 
     <label>Cable Length (m)
-      <input type="number" step="any" id="sel_cable_length" placeholder="3500">
+      <input type="number" step="any" id="sel_cable_length" placeholder="3500" required>
     </label>
 
     <label>Cable Weight in Water (lbf/ft)
-      <input type="number" step="any" id="sel_umb_weight" placeholder="1.26">
+      <input type="number" step="any" id="sel_umb_weight" placeholder="1.26" required>
     </label>
 
     <label>Drum Core Diameter (inch)
-      <input type="number" step="any" id="sel_drum_core_dia" placeholder="51">
+      <input type="number" step="any" id="sel_drum_core_dia" placeholder="51" required>
     </label>
 
     <label>Lebus Groove Thickness (inch)
-      <input type="number" step="any" id="sel_drum_lebus_thickness" placeholder="0.625">
+      <input type="number" step="any" id="sel_drum_lebus_thickness" placeholder="0.625" required>
     </label>
 
     <label>Flange Diameter (inch)
-      <input type="number" step="any" id="sel_drum_flange_dia" placeholder="82">
+      <input type="number" step="any" id="sel_drum_flange_dia" placeholder="82" required>
     </label>
 
     <label>Flange-to-Flange Width (inch)
-      <input type="number" step="any" id="sel_drum_flange_to_flange" placeholder="91.5">
+      <input type="number" step="any" id="sel_drum_flange_to_flange" placeholder="91.5" required>
     </label>
 
     <label>Wraps per Layer (0 = auto-calculate)
-      <input type="number" step="any" id="sel_drum_wraps_per_layer" placeholder="0">
+      <input type="number" step="any" id="sel_drum_wraps_per_layer" placeholder="0" required>
     </label>
 
     <label>Payload Weight in Water (kgf)
-      <input type="number" step="any" id="sel_payload_weight" placeholder="1537">
+      <input type="number" step="any" id="sel_payload_weight" placeholder="1537" required>
     </label>
 
     <label>Selected System Power (hp)
@@ -101,7 +101,7 @@
     </label>
 
     <label>Hydra-Mech Efficiency (0–1)
-      <input type="number" step="any" id="sel_hyd_mech_efficiency" placeholder="0.85">
+      <input type="number" step="any" id="sel_hyd_mech_efficiency" placeholder="0.85" required>
     </label>
 
     <button type="submit">Save & Calculate</button>
@@ -135,6 +135,15 @@
         sel_hyd_mech_efficiency: parseFloat(document.getElementById("sel_hyd_mech_efficiency").value)
       };
 
+      // Check for missing/invalid values
+      for (const key in inputs) {
+        if (inputs[key] === null || isNaN(inputs[key])) {
+          alert(`Missing or invalid value: ${key}`);
+          return;
+        }
+      }
+
+      // Save and show
       localStorage.setItem("winch_inputs", JSON.stringify(inputs));
       document.getElementById("output").textContent = JSON.stringify(inputs, null, 2);
 
@@ -144,86 +153,92 @@
 
     function calculateDrumLayers(inputs) {
       const u = math.unit;
+      try {
+        const drumCoreDia = u(inputs.sel_drum_core_dia, 'inch');
+        const lebusThickness = u(inputs.sel_drum_lebus_thickness, 'inch');
+        const cableDia = u(inputs.sel_umb_dia, 'mm').to('inch');
+        const flangeToFlange = u(inputs.sel_drum_flange_to_flange, 'inch');
+        const flangeDia = u(inputs.sel_drum_flange_dia, 'inch');
+        const cableLength = u(inputs.sel_cable_length, 'm');
+        const wrapsPerLayerInput = inputs.sel_drum_wraps_per_layer;
+        const payloadWeight = u(inputs.sel_payload_weight, 'kgf');
+        const cableWeight = u(inputs.sel_umb_weight, 'lbf/ft');
 
-      const drumCoreDia = u(inputs.sel_drum_core_dia, 'inch');
-      const lebusThickness = u(inputs.sel_drum_lebus_thickness, 'inch');
-      const cableDia = u(inputs.sel_umb_dia, 'mm').to('inch');
-      const flangeToFlange = u(inputs.sel_drum_flange_to_flange, 'inch');
-      const flangeDia = u(inputs.sel_drum_flange_dia, 'inch');
-      const cableLength = u(inputs.sel_cable_length, 'm');
-      const wrapsPerLayerInput = inputs.sel_drum_wraps_per_layer;
+        const reqFreeFlange = cableDia.multiply(2.5);
+        const actualFreeFlange = flangeDia.divide(2).subtract(
+          drumCoreDia.divide(2).add(lebusThickness)
+        );
 
-      const payloadWeight = u(inputs.sel_payload_weight, 'kgf');
-      const cableWeight = u(inputs.sel_umb_weight, 'lbf/ft');
+        const usableWidth = flangeToFlange;
+        const wrapsPerLayer = wrapsPerLayerInput > 0
+          ? wrapsPerLayerInput
+          : Math.floor(usableWidth.toNumber('inch') / cableDia.toNumber('inch'));
 
-      const reqFreeFlange = cableDia.multiply(2.5);
-      const actualFreeFlange = flangeDia.divide(2).subtract(
-        drumCoreDia.divide(2).add(lebusThickness)
-      );
+        const layers = [];
+        let remainingCable = cableLength;
+        let accLength = u(0, 'm');
+        let layer = 0;
+        let currentRadius = drumCoreDia.divide(2);
+        const cableDiaInch = cableDia.to('inch');
 
-      const usableWidth = flangeToFlange;
-      const wrapsPerLayer = wrapsPerLayerInput > 0
-        ? wrapsPerLayerInput
-        : Math.floor(usableWidth.toNumber('inch') / cableDia.toNumber('inch'));
+        while (remainingCable.toNumber('m') > 0 && currentRadius.multiply(2).lt(flangeDia)) {
+          const layerRadius = currentRadius.add(cableDiaInch.multiply(0.5));
+          const circumference = layerRadius.multiply(2 * Math.PI);
+          const cablePerWrap = circumference.to('m');
+          const layerLength = cablePerWrap.multiply(wrapsPerLayer);
+          const layerLengthLimited = math.min(layerLength, remainingCable);
+          accLength = accLength.add(layerLengthLimited);
+          remainingCable = remainingCable.subtract(layerLengthLimited);
 
-      const layers = [];
-      let remainingCable = cableLength;
-      let accLength = u(0, 'm');
-      let layer = 0;
-      let currentRadius = drumCoreDia.divide(2);
-      const cableDiaInch = cableDia.to('inch');
+          const tension = payloadWeight.add(
+            accLength.multiply(cableWeight.to('kgf/m'))
+          ).to('kgf');
 
-      while (remainingCable.toNumber('m') > 0 && currentRadius.multiply(2).lt(flangeDia)) {
-        const layerRadius = currentRadius.add(cableDiaInch.multiply(0.5));
-        const circumference = layerRadius.multiply(2 * Math.PI);
-        const cablePerWrap = circumference.to('m');
-        const layerLength = cablePerWrap.multiply(wrapsPerLayer);
-        const layerLengthLimited = math.min(layerLength, remainingCable);
-        accLength = accLength.add(layerLengthLimited);
-        remainingCable = remainingCable.subtract(layerLengthLimited);
+          layers.push({
+            layer: layer + 1,
+            dia_inch: layerRadius.multiply(2).to('inch').toNumber(),
+            cable_on_drum_m: accLength.toNumber('m'),
+            cable_in_water_m: accLength.toNumber('m'),
+            operating_tension_kgf: tension.toNumber('kgf')
+          });
 
-        const tension = payloadWeight.add(
-          accLength.multiply(cableWeight.to('kgf/m'))
-        ).to('kgf');
+          currentRadius = layerRadius;
+          layer++;
+        }
 
-        layers.push({
-          layer: layer + 1,
-          dia_inch: layerRadius.multiply(2).to('inch').toNumber(),
-          cable_on_drum_m: accLength.toNumber('m'),
-          cable_in_water_m: accLength.toNumber('m'),
-          operating_tension_kgf: tension.toNumber('kgf')
-        });
+        console.log("Calculated layers:", layers);
 
-        currentRadius = layerRadius;
-        layer++;
+        return {
+          wrapsPerLayer,
+          reqFreeFlange: reqFreeFlange.to('inch').toString(),
+          actualFreeFlange: actualFreeFlange.to('inch').toString(),
+          layers
+        };
+
+      } catch (err) {
+        console.error("Error in calculateDrumLayers:", err.message);
+        return {
+          error: err.message,
+          layers: []
+        };
       }
-
-      return {
-        wrapsPerLayer,
-        reqFreeFlange: reqFreeFlange.to('inch').toString(),
-        actualFreeFlange: actualFreeFlange.to('inch').toString(),
-        layers
-      };
     }
 
     window.addEventListener("DOMContentLoaded", () => {
-  const saved = localStorage.getItem("winch_inputs");
-  if (saved) {
-    const inputs = JSON.parse(saved);
-    document.getElementById("output").textContent = saved;
+      const saved = localStorage.getItem("winch_inputs");
+      if (saved) {
+        const inputs = JSON.parse(saved);
+        document.getElementById("output").textContent = saved;
 
-    for (const key in inputs) {
-      const field = document.getElementById(key);
-      if (field) {
-        field.value = inputs[key];
+        for (const key in inputs) {
+          const field = document.getElementById(key);
+          if (field) field.value = inputs[key];
+        }
+
+        const layerResults = calculateDrumLayers(inputs);
+        document.getElementById("layers").textContent = JSON.stringify(layerResults, null, 2);
       }
-    }
-
-    // Auto-run layer calculation with restored inputs
-    const layerResults = calculateDrumLayers(inputs);
-    document.getElementById("layers").textContent = JSON.stringify(layerResults, null, 2);
-  }
-});
+    });
   </script>
 
 </body>
