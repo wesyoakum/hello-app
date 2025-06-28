@@ -49,59 +49,59 @@
     </label>
 
     <label>Safe Working Load (kgf)
-      <input type="number" id="req_swl" placeholder="13000">
+      <input type="number" step="any" id="req_swl" placeholder="13000">
     </label>
 
     <label>Required Line Speed (m/min)
-      <input type="number" id="req_speed" placeholder="90">
+      <input type="number" step="any" id="req_speed" placeholder="90">
     </label>
 
     <label>Cable Diameter (mm)
-      <input type="number" id="sel_umb_dia" placeholder="41">
+      <input type="number" step="any" id="sel_umb_dia" placeholder="41">
     </label>
 
     <label>Cable Length (m)
-      <input type="number" id="sel_cable_length" placeholder="3500">
+      <input type="number" step="any" id="sel_cable_length" placeholder="3500">
     </label>
 
     <label>Cable Weight in Water (lbf/ft)
-      <input type="number" step="0.01" id="sel_umb_weight" placeholder="1.26">
+      <input type="number" step="any" id="sel_umb_weight" placeholder="1.26">
     </label>
 
     <label>Drum Core Diameter (inch)
-      <input type="number" id="sel_drum_core_dia" placeholder="51">
+      <input type="number" step="any" id="sel_drum_core_dia" placeholder="51">
     </label>
 
     <label>Lebus Groove Thickness (inch)
-      <input type="number" step="0.01" id="sel_drum_lebus_thickness" placeholder="0.625">
+      <input type="number" step="any" id="sel_drum_lebus_thickness" placeholder="0.625">
     </label>
 
     <label>Flange Diameter (inch)
-      <input type="number" id="sel_drum_flange_dia" placeholder="82">
+      <input type="number" step="any" id="sel_drum_flange_dia" placeholder="82">
     </label>
 
     <label>Flange-to-Flange Width (inch)
-      <input type="number" id="sel_drum_flange_to_flange" placeholder="91.5">
+      <input type="number" step="any" id="sel_drum_flange_to_flange" placeholder="91.5">
     </label>
 
     <label>Wraps per Layer (0 = auto-calculate)
-      <input type="number" id="sel_drum_wraps_per_layer" placeholder="0">
+      <input type="number" step="any" id="sel_drum_wraps_per_layer" placeholder="0">
     </label>
 
     <label>Payload Weight in Water (kgf)
-      <input type="number" id="sel_payload_weight" placeholder="1537">
+      <input type="number" step="any" id="sel_payload_weight" placeholder="1537">
     </label>
 
     <label>Selected System Power (hp)
-      <input type="number" id="sel_pwr" placeholder="100">
+      <input type="number" step="any" id="sel_pwr" placeholder="100">
     </label>
 
     <label>Hydraulic System Pressure (psi)
-      <input type="number" id="sel_hyd_sys_press" placeholder="3000">
+      <input type="number" step="any" id="sel_hyd_sys_press" placeholder="3000">
     </label>
 
     <label>Hydra-Mech Efficiency (0–1)
-      <input type="number" step="0.01" id="sel_hyd_mech_efficiency" placeholder="0.85">
+      <input type="number" step="any" id="sel_hyd_mech_efficiency" placeholder="0.85">
     </label>
 
     <button type="submit">Save & Calculate</button>
@@ -119,20 +119,20 @@
 
       const inputs = {
         winch_type: document.getElementById("winch_type").value,
-        req_swl: Number(document.getElementById("req_swl").value),
-        req_speed: Number(document.getElementById("req_speed").value),
-        sel_umb_dia: Number(document.getElementById("sel_umb_dia").value),
-        sel_cable_length: Number(document.getElementById("sel_cable_length").value),
-        sel_umb_weight: Number(document.getElementById("sel_umb_weight").value),
-        sel_drum_core_dia: Number(document.getElementById("sel_drum_core_dia").value),
-        sel_drum_lebus_thickness: Number(document.getElementById("sel_drum_lebus_thickness").value),
-        sel_drum_flange_dia: Number(document.getElementById("sel_drum_flange_dia").value),
-        sel_drum_flange_to_flange: Number(document.getElementById("sel_drum_flange_to_flange").value),
-        sel_drum_wraps_per_layer: Number(document.getElementById("sel_drum_wraps_per_layer").value),
-        sel_payload_weight: Number(document.getElementById("sel_payload_weight").value),
-        sel_hyd_pwr: Number(document.getElementById("sel_pwr").value),
-        sel_hyd_sys_press: Number(document.getElementById("sel_hyd_sys_press").value),
-        sel_hyd_mech_efficiency: Number(document.getElementById("sel_hyd_mech_efficiency").value)
+        req_swl: parseFloat(document.getElementById("req_swl").value),
+        req_speed: parseFloat(document.getElementById("req_speed").value),
+        sel_umb_dia: parseFloat(document.getElementById("sel_umb_dia").value),
+        sel_cable_length: parseFloat(document.getElementById("sel_cable_length").value),
+        sel_umb_weight: parseFloat(document.getElementById("sel_umb_weight").value),
+        sel_drum_core_dia: parseFloat(document.getElementById("sel_drum_core_dia").value),
+        sel_drum_lebus_thickness: parseFloat(document.getElementById("sel_drum_lebus_thickness").value),
+        sel_drum_flange_dia: parseFloat(document.getElementById("sel_drum_flange_dia").value),
+        sel_drum_flange_to_flange: parseFloat(document.getElementById("sel_drum_flange_to_flange").value),
+        sel_drum_wraps_per_layer: parseFloat(document.getElementById("sel_drum_wraps_per_layer").value),
+        sel_payload_weight: parseFloat(document.getElementById("sel_payload_weight").value),
+        sel_hyd_pwr: parseFloat(document.getElementById("sel_pwr").value),
+        sel_hyd_sys_press: parseFloat(document.getElementById("sel_hyd_sys_press").value),
+        sel_hyd_mech_efficiency: parseFloat(document.getElementById("sel_hyd_mech_efficiency").value)
       };
 
       localStorage.setItem("winch_inputs", JSON.stringify(inputs));
