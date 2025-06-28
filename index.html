@@ -2,69 +2,146 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Calculation App</title>
+  <title>Winch Input Form</title>
   <style>
     body {
       font-family: sans-serif;
-      text-align: center;
-      padding: 40px;
-      background-color: #f7f7f7;
+      padding: 30px;
+      max-width: 700px;
+      margin: auto;
+      background: #f9f9f9;
     }
-    form {
-      display: inline-block;
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
     }
     input {
+      width: 100%;
       padding: 8px;
-      width: 200px;
-      margin-bottom: 15px;
       font-size: 16px;
+      margin-top: 5px;
     }
     button {
+      margin-top: 25px;
       padding: 10px 20px;
       font-size: 16px;
-      cursor: pointer;
     }
-    #output {
-      margin-top: 30px;
-      font-size: 18px;
+    pre {
+      background: #eee;
+      padding: 15px;
+      border-radius: 5px;
+      white-space: pre-wrap;
     }
   </style>
 </head>
 <body>
 
-  <h1>Calculation Setup</h1>
+  <h1>Winch Configuration Input</h1>
 
   <form id="inputForm">
-    <label for="username">Name:</label><br>
-    <input type="text" id="username" placeholder="Enter your name" required><br><br>
+    <label>Winch Type (electric or hydraulic)
+      <input type="text" id="winch_type" placeholder="electric">
+    </label>
 
-    <label for="value1">Enter a number:</label><br>
-    <input type="number" id="value1" placeholder="e.g. 42" required><br><br>
+    <label>Safe Working Load (kgf)
+      <input type="number" id="req_swl" placeholder="13000">
+    </label>
 
-    <button type="submit">Submit</button>
+    <label>Required Line Speed (m/min)
+      <input type="number" id="req_speed" placeholder="90">
+    </label>
+
+    <label>Cable Diameter (mm)
+      <input type="number" id="sel_umb_dia" placeholder="41">
+    </label>
+
+    <label>Cable Length (m)
+      <input type="number" id="sel_cable_length" placeholder="3500">
+    </label>
+
+    <label>Cable Weight in Water (lbf/ft)
+      <input type="number" step="0.01" id="sel_umb_weight" placeholder="1.26">
+    </label>
+
+    <label>Drum Core Diameter (inch)
+      <input type="number" id="sel_drum_core_dia" placeholder="51">
+    </label>
+
+    <label>Lebus Groove Thickness (inch)
+      <input type="number" step="0.01" id="sel_drum_lebus_thickness" placeholder="0.625">
+    </label>
+
+    <label>Flange Diameter (inch)
+      <input type="number" id="sel_drum_flange_dia" placeholder="82">
+    </label>
+
+    <label>Flange-to-Flange Width (inch)
+      <input type="number" id="sel_drum_flange_to_flange" placeholder="91.5">
+    </label>
+
+    <label>Wraps per Layer (0 = auto-calculate)
+      <input type="number" id="sel_drum_wraps_per_layer" placeholder="0">
+    </label>
+
+    <label>Payload Weight in Water (kgf)
+      <input type="number" id="sel_payload_weight" placeholder="1537">
+    </label>
+
+    <label>Hydraulic Power Input (hp)
+      <input type="number" id="sel_hyd_pwr" placeholder="100">
+    </label>
+
+    <label>Hydraulic System Pressure (psi)
+      <input type="number" id="sel_hyd_sys_press" placeholder="3000">
+    </label>
+
+    <label>Mechanical Efficiency (0–1)
+      <input type="number" step="0.01" id="sel_hyd_mech_efficiency" placeholder="0.85">
+    </label>
+
+    <button type="submit">Save</button>
   </form>
 
-  <p id="output"></p>
+  <h2>Saved Values</h2>
+  <pre id="output"></pre>
 
   <script>
     document.getElementById("inputForm").addEventListener("submit", function(event) {
-      event.preventDefault(); // prevent page refresh
+      event.preventDefault();
 
-      const name = document.getElementById("username").value;
-      const number = parseFloat(document.getElementById("value1").value);
+      const data = {
+        winch_type: document.getElementById("winch_type").value,
+        req_swl: Number(document.getElementById("req_swl").value),
+        req_speed: Number(document.getElementById("req_speed").value),
+        sel_umb_dia: Number(document.getElementById("sel_umb_dia").value),
+        sel_cable_length: Number(document.getElementById("sel_cable_length").value),
+        sel_umb_weight: Number(document.getElementById("sel_umb_weight").value),
+        sel_drum_core_dia: Number(document.getElementById("sel_drum_core_dia").value),
+        sel_drum_lebus_thickness: Number(document.getElementById("sel_drum_lebus_thickness").value),
+        sel_drum_flange_dia: Number(document.getElementById("sel_drum_flange_dia").value),
+        sel_drum_flange_to_flange: Number(document.getElementById("sel_drum_flange_to_flange").value),
+        sel_drum_wraps_per_layer: Number(document.getElementById("sel_drum_wraps_per_layer").value),
+        sel_payload_weight: Number(document.getElementById("sel_payload_weight").value),
+        sel_hyd_pwr: Number(document.getElementById("sel_hyd_pwr").value),
+        sel_hyd_sys_press: Number(document.getElementById("sel_hyd_sys_press").value),
+        sel_hyd_mech_efficiency: Number(document.getElementById("sel_hyd_mech_efficiency").value)
+      };
 
-      if (!isNaN(number)) {
-        const message = `Hello, ${name}! You entered the number ${number}.`;
-        document.getElementById("output").textContent = message;
+      // Save to localStorage as JSON
+      localStorage.setItem("winch_inputs", JSON.stringify(data));
 
-        // Ready for later use
-        console.log("Stored values:", { name, number });
-      } else {
-        document.getElementById("output").textContent = "Please enter a valid number.";
+      // Display it back on the page
+      document.getElementById("output").textContent = JSON.stringify(data, null, 2);
+
+      console.log("Saved inputs:", data);
+    });
+
+    // Optional: load saved data on page load
+    window.addEventListener("DOMContentLoaded", () => {
+      const saved = localStorage.getItem("winch_inputs");
+      if (saved) {
+        document.getElementById("output").textContent = saved;
       }
     });
   </script>
