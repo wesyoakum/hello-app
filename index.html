@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hello App</title>
+ 
+  <style>
+    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+    button { padding: 10px 20px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h1 id="greeting">Hello, Wes!</h1>
+  <button onclick="changeName()">Change Name</button>
+
+  <script>
+    function changeName() {
+      const name = prompt("What's your name?");
+      if (name) {
+        document.getElementById("greeting").textContent = `Hello, ${name}!`;
+      }
+    }
+  </script>
+</body>
+</html>
