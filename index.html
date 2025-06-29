@@ -165,8 +165,11 @@
         const cableWeight = u(inputs.sel_umb_weight, 'lbf/ft');
 
         const reqFreeFlange = cableDia.multiply(2.5);
-        const actualFreeFlange = flangeDia.divide(2).subtract(
-          drumCoreDia.divide(2).add(lebusThickness)
+        const actualFreeFlange = flangeDia.divide(u(2, '')).subtract(
+  drumCoreDia.divide(u(2, '')).add(lebusThickness)
+);
+
+drumCoreDia.divide(2).add(lebusThickness)
         );
 
         const usableWidth = flangeToFlange;
