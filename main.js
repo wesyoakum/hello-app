@@ -223,62 +223,69 @@ window.addEventListener('DOMContentLoaded', () => {
 function calculateDrumLayers(inputs) {
   const u = math.unit;
   try {
-    const drumCoreDia = u(inputs.sel_drum_core_dia, 'inch');
-    const lebusThickness = u(inputs.sel_drum_lebus_thickness, 'inch');
     const cableDia = u(inputs.sel_umb_dia, 'mm').to('inch');
     const flangeToFlange = u(inputs.sel_drum_flange_to_flange, 'inch');
     const flangeDia = u(inputs.sel_drum_flange_dia, 'inch');
+    const coreDia = u(inputs.sel_drum_core_dia, 'inch');
+    const lebusThickness = u(inputs.sel_drum_lebus_thickness, 'inch');
     const cableLength = u(inputs.sel_cable_length, 'm');
-    const wrapsPerLayerInput = inputs.sel_drum_wraps_per_layer;
-    const payloadWeight = u(inputs.sel_payload_weight, 'kgf');
-    const cableWeight = u(inputs.sel_umb_weight, 'lbf/ft');
 
     const reqFreeFlange = cableDia.multiply(2.5);
-    const actualFreeFlange = flangeDia.divide(u(2, '')).subtract(
-      drumCoreDia.divide(u(2, '')).add(lebusThickness)
-    );
+    const flangeRadius = flangeDia.divide(2);
+    const bareDrumRadius = coreDia.divide(2).add(lebusThickness);
+    const bareDrumDia = bareDrumRadius.multiply(2);
+    const actualFreeFlangeBare = flangeRadius.subtract(bareDrumRadius);
 
-    const usableWidth = flangeToFlange;
-    const wrapsPerLayer = wrapsPerLayerInput > 0
-      ? wrapsPerLayerInput
-      : Math.floor(usableWidth.toNumber('inch') / cableDia.toNumber('inch'));
+    let baseWraps = inputs.sel_drum_wraps_per_layer > 0
+      ? inputs.sel_drum_wraps_per_layer
+      : Math.floor(flangeToFlange.divide(cableDia.multiply(0.866)).toNumber());
+    if (baseWraps < 1) baseWraps = 1;
 
+    const wrapPattern = [baseWraps, Math.max(baseWraps - 1, 1)];
+    const radInc = cableDia.multiply(0.866);
     const layers = [];
-    let remainingCable = cableLength;
-    let accLength = u(0, 'm');
-    let layer = 0;
-    let currentRadius = drumCoreDia.divide(2);
-    const cableDiaInch = cableDia.to('inch');
+    let currentRadius = bareDrumRadius;
+    let remaining = cableLength;
+    let cumulative = u(0, 'm');
+    let idx = 0;
 
-    while (remainingCable.toNumber('m') > 0 && currentRadius.multiply(2).lt(flangeDia)) {
-      const layerRadius = currentRadius.add(cableDiaInch.multiply(0.5));
-      const circumference = layerRadius.multiply(2 * Math.PI);
-      const cablePerWrap = circumference.to('m');
-      const layerLength = cablePerWrap.multiply(wrapsPerLayer);
-      const layerLengthLimited = math.min(layerLength, remainingCable);
-      accLength = accLength.add(layerLengthLimited);
-      remainingCable = remainingCable.subtract(layerLengthLimited);
-
-      const tension = payloadWeight.add(
-        accLength.multiply(cableWeight.to('kgf/m'))
-      ).to('kgf');
+    while (remaining.toNumber('m') > 0 && currentRadius.add(radInc).lt(flangeRadius)) {
+      const wraps = wrapPattern[idx % wrapPattern.length];
+      const nextRadius = currentRadius.add(radInc);
+      const circumference = nextRadius.multiply(2 * Math.PI);
+      let capacity = circumference.to('m').multiply(wraps);
+      if (capacity.gt(remaining)) {
+        capacity = remaining;
+      }
+      cumulative = cumulative.add(capacity);
+      remaining = remaining.subtract(capacity);
+      const freeFlange = flangeRadius.subtract(nextRadius);
 
       layers.push({
-        layer: layer + 1,
-        dia_inch: layerRadius.multiply(2).to('inch').toNumber(),
-        cable_on_drum_m: accLength.toNumber('m'),
-        cable_in_water_m: accLength.toNumber('m'),
-        operating_tension_kgf: tension.toNumber('kgf')
+        layer: idx + 1,
+        wrapsAvailable: wraps,
+        diameter_in: nextRadius.multiply(2).to('inch').toNumber(),
+        layer_capacity_m: capacity.toNumber('m'),
+        cumulative_capacity_m: cumulative.toNumber('m'),
+        free_flange_in: freeFlange.to('inch').toNumber()
       });
 
-      currentRadius = layerRadius;
-      layer++;
+      currentRadius = nextRadius;
+      idx++;
+
+      if (freeFlange.lt(reqFreeFlange)) {
+        break;
+      }
     }
 
+    const fullDrumDia = currentRadius.multiply(2);
+
     return {
-      wrapsPerLayer,
-      reqFreeFlange: reqFreeFlange.to('inch').toString(),
-      actualFreeFlange: actualFreeFlange.to('inch').toString(),
+      numLayers: layers.length,
+      bareDrumDiameter_in: bareDrumDia.to('inch').toNumber(),
+      fullDrumDiameter_in: fullDrumDia.to('inch').toNumber(),
+      reqFreeFlange_in: reqFreeFlange.to('inch').toNumber(),
+      actualFreeFlangeBare_in: actualFreeFlangeBare.to('inch').toNumber(),
       layers
     };
 
