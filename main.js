@@ -222,6 +222,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 function calculateDrumLayers(inputs) {
   const u = math.unit;
+    const PACKING_FACTOR = 0.866; // radial increment multiplier for cross-lay spooling
   try {
     const cableDia = u(inputs.sel_umb_dia, 'mm').to('inch');
     const flangeToFlange = u(inputs.sel_drum_flange_to_flange, 'inch');
@@ -238,11 +239,11 @@ function calculateDrumLayers(inputs) {
 
     let baseWraps = inputs.sel_drum_wraps_per_layer > 0
       ? inputs.sel_drum_wraps_per_layer
-      : Math.floor(flangeToFlange.divide(cableDia.multiply(0.866)).toNumber());
+      : Math.floor(flangeToFlange.divide(cableDia.multiply(PACKING_FACTOR)).toNumber());
     if (baseWraps < 1) baseWraps = 1;
 
     const wrapPattern = [baseWraps, Math.max(baseWraps - 1, 1)];
-    const radInc = cableDia.multiply(0.866);
+    const radInc = cableDia.multiply(PACKING_FACTOR);
     const layers = [];
     let currentRadius = bareDrumRadius;
     let remaining = cableLength;
@@ -252,6 +253,13 @@ function calculateDrumLayers(inputs) {
     while (remaining.toNumber('m') > 0 && currentRadius.add(radInc).lt(flangeRadius)) {
       const wraps = wrapPattern[idx % wrapPattern.length];
       const nextRadius = currentRadius.add(radInc);
+      const freeFlange = flangeRadius.subtract(nextRadius); // compute free flange immediately
+
+      // stop if this layer would violate the required free flange
+      if (freeFlange.lt(reqFreeFlange)) {
+        break;
+      }
+
       const circumference = nextRadius.multiply(2 * Math.PI);
       let capacity = circumference.to('m').multiply(wraps);
       if (capacity.gt(remaining)) {
@@ -259,7 +267,6 @@ function calculateDrumLayers(inputs) {
       }
       cumulative = cumulative.add(capacity);
       remaining = remaining.subtract(capacity);
-      const freeFlange = flangeRadius.subtract(nextRadius);
 
       layers.push({
         layer: idx + 1,
@@ -270,7 +277,7 @@ function calculateDrumLayers(inputs) {
         free_flange_in: freeFlange.to('inch').toNumber()
       });
 
-      currentRadius = nextRadius;
+      currentRadius = nextRadius; // update radius only after accepting the layer
       idx++;
 
       if (freeFlange.lt(reqFreeFlange)) {
