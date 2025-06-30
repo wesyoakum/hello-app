@@ -1,27 +1,37 @@
- body {
+body {
       font-family: sans-serif;
       padding: 30px;
       max-width: 700px;
       margin: auto;
       background: #f9f9f9;
     }
-    label {
+label {
       display: block;
       margin-top: 15px;
       font-weight: bold;
     }
-    input {
+input {
       width: 100%;
       padding: 8px;
       font-size: 16px;
       margin-top: 5px;
     }
-    button {
+    select {      
+    width: 100%;
+      padding: 8px;
+      font-size: 16px;
+      margin-top: 5px;
+    }
+button {
       margin-top: 25px;
       padding: 10px 20px;
       font-size: 16px;
     }
-    pre {
+        #configControls button {
+      margin-top: 10px;
+      margin-right: 5px;
+    }
+pre {
       background: #eee;
       padding: 15px;
       border-radius: 5px;

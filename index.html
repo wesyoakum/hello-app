@@ -13,8 +13,11 @@
   <h1>Winch Configuration Input</h1>
 
   <form id="inputForm">
-    <label>Winch Type (electric or hydraulic)
-      <input type="text" id="winch_type" placeholder="electric" required>
+    <label>Winch Type
+      <select id="winch_type" required>
+        <option value="electric">Electric</option>
+        <option value="hydraulic">Hydraulic</option>
+      </select>
     </label>
 
     <label>Safe Working Load (kgf)
@@ -32,7 +35,6 @@
     <label>Cable Length (m)
       <input type="number" step="any" id="sel_cable_length" placeholder="3500" required>
     </label>
-@@ -91,158 +61,29 @@
     <label>Payload Weight in Water (kgf)
       <input type="number" step="any" id="sel_payload_weight" placeholder="1537" required>
     </label>
@@ -51,6 +53,18 @@
 
     <button type="submit">Save & Calculate</button>
   </form>
+  
+  <h2>Configurations</h2>
+  <select id="configSelect"></select>
+  <div id="configControls">
+    <button id="configAdd">Add New</button>
+    <button id="configSave">Save</button>
+    <button id="configDelete">Delete</button>
+    <button id="configRename">Rename</button>
+    <button id="configExport">Export</button>
+    <input type="file" id="configImportInput" style="display:none">
+    <button id="configImport">Import</button>
+  </div>
 
   <h2>Saved Inputs</h2>
   <pre id="output"></pre>

@@ -1,126 +1,267 @@
- document.getElementById("inputForm").addEventListener("submit", function(event) {
-      event.preventDefault();
+// Configuration management
+const CONFIG_KEY = 'winch_configs';
 
-      const inputs = {
-        winch_type: document.getElementById("winch_type").value,
-        req_swl: parseFloat(document.getElementById("req_swl").value),
-        req_speed: parseFloat(document.getElementById("req_speed").value),
-        sel_umb_dia: parseFloat(document.getElementById("sel_umb_dia").value),
-        sel_cable_length: parseFloat(document.getElementById("sel_cable_length").value),
-        sel_umb_weight: parseFloat(document.getElementById("sel_umb_weight").value),
-        sel_drum_core_dia: parseFloat(document.getElementById("sel_drum_core_dia").value),
-        sel_drum_lebus_thickness: parseFloat(document.getElementById("sel_drum_lebus_thickness").value),
-        sel_drum_flange_dia: parseFloat(document.getElementById("sel_drum_flange_dia").value),
-        sel_drum_flange_to_flange: parseFloat(document.getElementById("sel_drum_flange_to_flange").value),
-        sel_drum_wraps_per_layer: parseFloat(document.getElementById("sel_drum_wraps_per_layer").value),
-        sel_payload_weight: parseFloat(document.getElementById("sel_payload_weight").value),
-        sel_hyd_pwr: parseFloat(document.getElementById("sel_pwr").value),
-        sel_hyd_sys_press: parseFloat(document.getElementById("sel_hyd_sys_press").value),
-        sel_hyd_mech_efficiency: parseFloat(document.getElementById("sel_hyd_mech_efficiency").value)
-      };
+function getConfigs() {
+  try {
+    return JSON.parse(localStorage.getItem(CONFIG_KEY)) || {};
+  } catch (e) {
+    return {};
+  }
+}
 
-      // Check for missing/invalid values
-      for (const key in inputs) {
-        if (inputs[key] === null || isNaN(inputs[key])) {
-          alert(`Missing or invalid value: ${key}`);
-          return;
-        }
-      }
+function saveConfigs(configs) {
+  localStorage.setItem(CONFIG_KEY, JSON.stringify(configs));
+}
 
-      // Save and show
-      localStorage.setItem("winch_inputs", JSON.stringify(inputs));
-      document.getElementById("output").textContent = JSON.stringify(inputs, null, 2);
+function readInputs() {
+  return {
+    winch_type: document.getElementById('winch_type').value,
+    req_swl: parseFloat(document.getElementById('req_swl').value),
+    req_speed: parseFloat(document.getElementById('req_speed').value),
+    sel_umb_dia: parseFloat(document.getElementById('sel_umb_dia').value),
+    sel_cable_length: parseFloat(document.getElementById('sel_cable_length').value),
+    sel_umb_weight: parseFloat(document.getElementById('sel_umb_weight').value),
+    sel_drum_core_dia: parseFloat(document.getElementById('sel_drum_core_dia').value),
+    sel_drum_lebus_thickness: parseFloat(document.getElementById('sel_drum_lebus_thickness').value),
+    sel_drum_flange_dia: parseFloat(document.getElementById('sel_drum_flange_dia').value),
+    sel_drum_flange_to_flange: parseFloat(document.getElementById('sel_drum_flange_to_flange').value),
+    sel_drum_wraps_per_layer: parseFloat(document.getElementById('sel_drum_wraps_per_layer').value),
+    sel_payload_weight: parseFloat(document.getElementById('sel_payload_weight').value),
+    sel_hyd_pwr: parseFloat(document.getElementById('sel_pwr').value),
+    sel_hyd_sys_press: parseFloat(document.getElementById('sel_hyd_sys_press').value),
+    sel_hyd_mech_efficiency: parseFloat(document.getElementById('sel_hyd_mech_efficiency').value)
+  };
+}
 
-      const layerResults = calculateDrumLayers(inputs);
-      document.getElementById("layers").textContent = JSON.stringify(layerResults, null, 2);
-    });
+function fillInputs(data) {
+  for (const key in data) {
+    const field = document.getElementById(key);
+    if (field && data[key] !== undefined) {
+      field.value = data[key];
+    }
+  }
+}
 
-    function calculateDrumLayers(inputs) {
-      const u = math.unit;
-      try {
-        const drumCoreDia = u(inputs.sel_drum_core_dia, 'inch');
-        const lebusThickness = u(inputs.sel_drum_lebus_thickness, 'inch');
-        const cableDia = u(inputs.sel_umb_dia, 'mm').to('inch');
-        const flangeToFlange = u(inputs.sel_drum_flange_to_flange, 'inch');
-        const flangeDia = u(inputs.sel_drum_flange_dia, 'inch');
-        const cableLength = u(inputs.sel_cable_length, 'm');
-        const wrapsPerLayerInput = inputs.sel_drum_wraps_per_layer;
-        const payloadWeight = u(inputs.sel_payload_weight, 'kgf');
-        const cableWeight = u(inputs.sel_umb_weight, 'lbf/ft');
+function populateConfigSelect() {
+  const select = document.getElementById('configSelect');
+  const configs = getConfigs();
+  select.innerHTML = '';
+  Object.keys(configs).forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    select.appendChild(opt);
+  });
+  if (select.options.length === 0) {
+    const def = 'Default';
+    configs[def] = readInputs();
+    saveConfigs(configs);
+    const opt = document.createElement('option');
+    opt.value = def;
+    opt.textContent = def;
+    select.appendChild(opt);
+  }
+}
 
-        const reqFreeFlange = cableDia.multiply(2.5);
-        const actualFreeFlange = flangeDia.divide(u(2, '')).subtract(
-  drumCoreDia.divide(u(2, '')).add(lebusThickness)
-);
+function loadConfig(name) {
+  const configs = getConfigs();
+  if (configs[name]) {
+    fillInputs(configs[name]);
+    document.getElementById('output').textContent = JSON.stringify(configs[name], null, 2);
+    const results = calculateDrumLayers(configs[name]);
+    document.getElementById('layers').textContent = JSON.stringify(results, null, 2);
+  }
+}
 
+function saveCurrentConfig() {
+  const name = document.getElementById('configSelect').value;
+  const configs = getConfigs();
+  configs[name] = readInputs();
+  saveConfigs(configs);
+  document.getElementById('output').textContent = JSON.stringify(configs[name], null, 2);
+}
 
-        const usableWidth = flangeToFlange;
-        const wrapsPerLayer = wrapsPerLayerInput > 0
-          ? wrapsPerLayerInput
-          : Math.floor(usableWidth.toNumber('inch') / cableDia.toNumber('inch'));
+function addNewConfig() {
+  const name = prompt('New configuration name:');
+  if (!name) return;
+  const configs = getConfigs();
+  if (configs[name]) {
+    alert('Configuration already exists');
+    return;
+  }
+  configs[name] = readInputs();
+  saveConfigs(configs);
+  populateConfigSelect();
+  document.getElementById('configSelect').value = name;
+}
 
-        const layers = [];
-        let remainingCable = cableLength;
-        let accLength = u(0, 'm');
-        let layer = 0;
-        let currentRadius = drumCoreDia.divide(2);
-        const cableDiaInch = cableDia.to('inch');
+function deleteConfig() {
+  const select = document.getElementById('configSelect');
+  const name = select.value;
+  if (!confirm(`Delete configuration "${name}"?`)) return;
+  const configs = getConfigs();
+  delete configs[name];
+  saveConfigs(configs);
+  populateConfigSelect();
+  if (select.options.length) {
+    select.value = select.options[0].value;
+    loadConfig(select.value);
+  } else {
+    document.getElementById('output').textContent = '';
+    document.getElementById('layers').textContent = '';
+  }
+}
 
-        while (remainingCable.toNumber('m') > 0 && currentRadius.multiply(2).lt(flangeDia)) {
-          const layerRadius = currentRadius.add(cableDiaInch.multiply(0.5));
-          const circumference = layerRadius.multiply(2 * Math.PI);
-          const cablePerWrap = circumference.to('m');
-          const layerLength = cablePerWrap.multiply(wrapsPerLayer);
-          const layerLengthLimited = math.min(layerLength, remainingCable);
-          accLength = accLength.add(layerLengthLimited);
-          remainingCable = remainingCable.subtract(layerLengthLimited);
+function renameConfig() {
+  const select = document.getElementById('configSelect');
+  const oldName = select.value;
+  const newName = prompt('New name:', oldName);
+  if (!newName || newName === oldName) return;
+  const configs = getConfigs();
+  if (configs[newName]) {
+    alert('A configuration with that name already exists');
+    return;
+  }
+  configs[newName] = configs[oldName];
+  delete configs[oldName];
+  saveConfigs(configs);
+  populateConfigSelect();
+  select.value = newName;
+}
 
-          const tension = payloadWeight.add(
-            accLength.multiply(cableWeight.to('kgf/m'))
-          ).to('kgf');
+function exportConfigs() {
+  const data = JSON.stringify(getConfigs());
+  const blob = new Blob([data], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'configs.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
-          layers.push({
-            layer: layer + 1,
-            dia_inch: layerRadius.multiply(2).to('inch').toNumber(),
-            cable_on_drum_m: accLength.toNumber('m'),
-            cable_in_water_m: accLength.toNumber('m'),
-            operating_tension_kgf: tension.toNumber('kgf')
-          });
+function importConfigs(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const obj = JSON.parse(e.target.result);
+      const configs = getConfigs();
+      Object.assign(configs, obj);
+      saveConfigs(configs);
+      populateConfigSelect();
+    } catch (err) {
+      alert('Invalid configuration file');
+    }
+  };
+  reader.readAsText(file);
+}
 
-          currentRadius = layerRadius;
-          layer++;
-        }
+// Form submission
+document.getElementById('inputForm').addEventListener('submit', function (event) {
+  event.preventDefault();
+  const inputs = readInputs();
+  for (const key in inputs) {
+    if (inputs[key] === null || isNaN(inputs[key])) {
+      alert(`Missing or invalid value: ${key}`);
+      return;
+    }
+  }
+  saveCurrentConfig();
+  const layerResults = calculateDrumLayers(inputs);
+  document.getElementById('layers').textContent = JSON.stringify(layerResults, null, 2);
+});
 
-        console.log("Calculated layers:", layers);
+// Configuration button handlers
+window.addEventListener('DOMContentLoaded', () => {
+  populateConfigSelect();
+  const select = document.getElementById('configSelect');
+  if (select.value) loadConfig(select.value);
 
-        return {
-          wrapsPerLayer,
-          reqFreeFlange: reqFreeFlange.to('inch').toString(),
-          actualFreeFlange: actualFreeFlange.to('inch').toString(),
-          layers
-        };
+  document.getElementById('configAdd').addEventListener('click', addNewConfig);
+  document.getElementById('configSave').addEventListener('click', () => {
+    saveCurrentConfig();
+  });
+  document.getElementById('configDelete').addEventListener('click', deleteConfig);
+  document.getElementById('configRename').addEventListener('click', renameConfig);
+  document.getElementById('configExport').addEventListener('click', exportConfigs);
+  document.getElementById('configImport').addEventListener('click', () => {
+    document.getElementById('configImportInput').click();
+  });
+  document.getElementById('configImportInput').addEventListener('change', e => {
+    if (e.target.files[0]) {
+      importConfigs(e.target.files[0]);
+    }
+    e.target.value = '';
+  });
+  select.addEventListener('change', () => loadConfig(select.value));
+});
 
-      } catch (err) {
-        console.error("Error in calculateDrumLayers:", err.message);
-        return {
-          error: err.message,
-          layers: []
-        };
-      }
+function calculateDrumLayers(inputs) {
+  const u = math.unit;
+  try {
+    const drumCoreDia = u(inputs.sel_drum_core_dia, 'inch');
+    const lebusThickness = u(inputs.sel_drum_lebus_thickness, 'inch');
+    const cableDia = u(inputs.sel_umb_dia, 'mm').to('inch');
+    const flangeToFlange = u(inputs.sel_drum_flange_to_flange, 'inch');
+    const flangeDia = u(inputs.sel_drum_flange_dia, 'inch');
+    const cableLength = u(inputs.sel_cable_length, 'm');
+    const wrapsPerLayerInput = inputs.sel_drum_wraps_per_layer;
+    const payloadWeight = u(inputs.sel_payload_weight, 'kgf');
+    const cableWeight = u(inputs.sel_umb_weight, 'lbf/ft');
+
+    const reqFreeFlange = cableDia.multiply(2.5);
+    const actualFreeFlange = flangeDia.divide(u(2, '')).subtract(
+      drumCoreDia.divide(u(2, '')).add(lebusThickness)
+    );
+
+    const usableWidth = flangeToFlange;
+    const wrapsPerLayer = wrapsPerLayerInput > 0
+      ? wrapsPerLayerInput
+      : Math.floor(usableWidth.toNumber('inch') / cableDia.toNumber('inch'));
+
+    const layers = [];
+    let remainingCable = cableLength;
+    let accLength = u(0, 'm');
+    let layer = 0;
+    let currentRadius = drumCoreDia.divide(2);
+    const cableDiaInch = cableDia.to('inch');
+
+    while (remainingCable.toNumber('m') > 0 && currentRadius.multiply(2).lt(flangeDia)) {
+      const layerRadius = currentRadius.add(cableDiaInch.multiply(0.5));
+      const circumference = layerRadius.multiply(2 * Math.PI);
+      const cablePerWrap = circumference.to('m');
+      const layerLength = cablePerWrap.multiply(wrapsPerLayer);
+      const layerLengthLimited = math.min(layerLength, remainingCable);
+      accLength = accLength.add(layerLengthLimited);
+      remainingCable = remainingCable.subtract(layerLengthLimited);
+
+      const tension = payloadWeight.add(
+        accLength.multiply(cableWeight.to('kgf/m'))
+      ).to('kgf');
+
+      layers.push({
+        layer: layer + 1,
+        dia_inch: layerRadius.multiply(2).to('inch').toNumber(),
+        cable_on_drum_m: accLength.toNumber('m'),
+        cable_in_water_m: accLength.toNumber('m'),
+        operating_tension_kgf: tension.toNumber('kgf')
+      });
+
+      currentRadius = layerRadius;
+      layer++;
     }
 
-    window.addEventListener("DOMContentLoaded", () => {
-      const saved = localStorage.getItem("winch_inputs");
-      if (saved) {
-        const inputs = JSON.parse(saved);
-        document.getElementById("output").textContent = saved;
+    return {
+      wrapsPerLayer,
+      reqFreeFlange: reqFreeFlange.to('inch').toString(),
+      actualFreeFlange: actualFreeFlange.to('inch').toString(),
+      layers
+    };
 
-        for (const key in inputs) {
-          const field = document.getElementById(key);
-          if (field) field.value = inputs[key];
-        }
-
-        const layerResults = calculateDrumLayers(inputs);
-        document.getElementById("layers").textContent = JSON.stringify(layerResults, null, 2);
-      }
-    });
+  } catch (err) {
+    return {
+      error: err.message,
+      layers: []
+    };
+  }
+}
