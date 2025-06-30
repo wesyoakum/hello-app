@@ -13,6 +13,16 @@ function saveConfigs(configs) {
   localStorage.setItem(CONFIG_KEY, JSON.stringify(configs));
 }
 
+function updateFieldVisibility() {
+  const type = document.getElementById('winch_type').value;
+  document.querySelectorAll('.electric-only').forEach(el => {
+    el.style.display = type === 'electric' ? 'block' : 'none';
+  });
+  document.querySelectorAll('.hydraulic-only').forEach(el => {
+    el.style.display = type === 'hydraulic' ? 'block' : 'none';
+  });
+}
+
 function readInputs() {
   return {
     winch_type: document.getElementById('winch_type').value,
@@ -88,8 +98,19 @@ function loadConfig(name) {
   const configs = getConfigs();
   if (configs[name]) {
     fillInputs(configs[name]);
-    const results = calculateDrumLayers(configs[name]);
-    document.getElementById('layers').textContent = JSON.stringify(results, null, 2);
+        updateFieldVisibility();
+
+    const inputs = readInputs();
+    const valid = Object.keys(inputs).every(key => {
+      if (key === 'winch_type' || key === 'winch_model') return true;
+      return inputs[key] !== null && !isNaN(inputs[key]);
+    });
+    if (valid) {
+      const results = calculateDrumLayers(inputs);
+      document.getElementById('layers').textContent = JSON.stringify(results, null, 2);
+    } else {
+      document.getElementById('layers').textContent = '';
+    }
   }
 }
 
@@ -190,6 +211,9 @@ document.getElementById('inputForm').addEventListener('submit', function (event)
       alert(`Missing or invalid value: ${key}`);
       return;
     }
+      updateFieldVisibility();
+
+  document.getElementById('winch_type').addEventListener('change', updateFieldVisibility);
   }
   const layerResults = calculateDrumLayers(inputs);
   document.getElementById('layers').textContent = JSON.stringify(layerResults, null, 2);
@@ -200,7 +224,9 @@ window.addEventListener('DOMContentLoaded', () => {
   populateConfigSelect();
   const select = document.getElementById('configSelect');
   if (select.value) loadConfig(select.value);
+  updateFieldVisibility();
 
+  document.getElementById('winch_type').addEventListener('change', updateFieldVisibility);
   document.getElementById('configAdd').addEventListener('click', addNewConfig);
   document.getElementById('configSave').addEventListener('click', () => {
     saveCurrentConfig();

@@ -12,6 +12,18 @@
 
   <h1>Winch Configuration Input</h1>
 
+  <h2>Configurations</h2>
+  <select id="configSelect"></select>
+  <div id="configControls">
+    <button id="configAdd">Add New</button>
+    <button id="configSave">Save</button>
+    <button id="configDelete">Delete</button>
+    <button id="configRename">Rename</button>
+    <button id="configExport">Export</button>
+    <input type="file" id="configImportInput" style="display:none">
+    <button id="configImport">Import</button>
+  </div>
+
   <form id="inputForm">
     <label>Winch Type
       <select id="winch_type" required>
@@ -47,11 +59,11 @@
       <input type="number" step="any" id="sel_elec_motor_power" placeholder="50">
     </label>
 
-    <label>Max Operating PSI
+    <label class="hydraulic-only">Max Operating PSI
       <input type="number" step="any" id="sel_hyd_system_psi_max" placeholder="4000">
     </label>
 
-      <label>Hydra-Mech Efficiency (0–1)
+      <label class="hydraulic-only">Hydra-Mech Efficiency (0–1)
         <input type="number" step="any" id="sel_hyd_mech_efficiency" placeholder="0.85" required>
       </label>
 
@@ -103,47 +115,35 @@
         <input type="number" step="any" id="sel_motor_rpm" placeholder="2200" required>
       </label>
 
-      <label>Motor Efficiency
+      <label class="electric-only">Electro-Mechanical Efficiency
         <input type="number" step="any" id="sel_motor_eff" placeholder="0.96" required>
       </label>
 
-      <label>Hydraulic Motor Displacement (cc)
+      <label class="hydraulic-only">Hydraulic Motor Displacement (cc)
         <input type="number" step="any" id="sel_hyd_motor_displacement" placeholder="105" required>
       </label>
 
-      <label>Hydraulic Motor Max RPM
+      <label class="hydraulic-only">Hydraulic Motor Max RPM
         <input type="number" step="any" id="sel_hyd_motor_max_rpm" placeholder="3700" required>
       </label>
 
-      <label>Pump RPM
+      <label class="hydraulic-only">Pump RPM
         <input type="number" step="any" id="sel_elec_motor_rpm" placeholder="1780" required>
       </label>
 
-      <label>Number of Pumps
+      <label class="hydraulic-only">Number of Pumps
         <input type="number" step="any" id="sel_hyd_num_pumps" placeholder="1" required>
       </label>
 
-      <label>Closed Loop Pump Displacement (cc)
+      <label class="hydraulic-only">Closed Loop Pump Displacement (cc)
         <input type="number" step="any" id="sel_hyd_pump_displacement" placeholder="108" required>      </label>
 
-      <label>Charge Pressure (psi)
+      <label class="hydraulic-only">Charge Pressure (psi)
         <input type="number" step="any" id="sel_hyd_charge_pressure" placeholder="300" required>
       </label>
 
     <button type="submit">Calculate</button>
   </form>
-  
-  <h2>Configurations</h2>
-  <select id="configSelect"></select>
-  <div id="configControls">
-    <button id="configAdd">Add New</button>
-    <button id="configSave">Save</button>
-    <button id="configDelete">Delete</button>
-    <button id="configRename">Rename</button>
-    <button id="configExport">Export</button>
-    <input type="file" id="configImportInput" style="display:none">
-    <button id="configImport">Import</button>
-  </div>
 
   <h2>Drum Layer Calculation Results</h2>
   <pre id="layers"></pre>
