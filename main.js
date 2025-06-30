@@ -81,7 +81,6 @@ function loadConfig(name) {
   const configs = getConfigs();
   if (configs[name]) {
     fillInputs(configs[name]);
-    document.getElementById('output').textContent = JSON.stringify(configs[name], null, 2);
     const results = calculateDrumLayers(configs[name]);
     document.getElementById('layers').textContent = JSON.stringify(results, null, 2);
   }
@@ -92,7 +91,6 @@ function saveCurrentConfig() {
   const configs = getConfigs();
   configs[name] = readInputs();
   saveConfigs(configs);
-  document.getElementById('output').textContent = JSON.stringify(configs[name], null, 2);
 }
 
 function addNewConfig() {
@@ -121,7 +119,6 @@ function deleteConfig() {
     select.value = select.options[0].value;
     loadConfig(select.value);
   } else {
-    document.getElementById('output').textContent = '';
     document.getElementById('layers').textContent = '';
   }
 }
