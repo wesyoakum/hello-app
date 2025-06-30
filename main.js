@@ -187,7 +187,6 @@ document.getElementById('inputForm').addEventListener('submit', function (event)
       return;
     }
   }
-  saveCurrentConfig();
   const layerResults = calculateDrumLayers(inputs);
   document.getElementById('layers').textContent = JSON.stringify(layerResults, null, 2);
 });
