@@ -16,6 +16,7 @@ function saveConfigs(configs) {
 function readInputs() {
   return {
     winch_type: document.getElementById('winch_type').value,
+    winch_model: document.getElementById('winch_model').value,
     req_swl: parseFloat(document.getElementById('req_swl').value),
     req_speed: parseFloat(document.getElementById('req_speed').value),
     sel_umb_dia: parseFloat(document.getElementById('sel_umb_dia').value),
@@ -27,9 +28,22 @@ function readInputs() {
     sel_drum_flange_to_flange: parseFloat(document.getElementById('sel_drum_flange_to_flange').value),
     sel_drum_wraps_per_layer: parseFloat(document.getElementById('sel_drum_wraps_per_layer').value),
     sel_payload_weight: parseFloat(document.getElementById('sel_payload_weight').value),
-    sel_hyd_pwr: parseFloat(document.getElementById('sel_pwr').value),
-    sel_hyd_sys_press: parseFloat(document.getElementById('sel_hyd_sys_press').value),
-    sel_hyd_mech_efficiency: parseFloat(document.getElementById('sel_hyd_mech_efficiency').value)
+    sel_elec_motor_power: parseFloat(document.getElementById('sel_elec_motor_power').value),
+    sel_hyd_system_psi_max: parseFloat(document.getElementById('sel_hyd_system_psi_max').value),
+    sel_hyd_mech_efficiency: parseFloat(document.getElementById('sel_hyd_mech_efficiency').value),
+    sel_pinion_ratio: parseFloat(document.getElementById('sel_pinion_ratio').value),
+    sel_gearbox_ratio: parseFloat(document.getElementById('sel_gearbox_ratio').value),
+    sel_motor_count: parseFloat(document.getElementById('sel_motor_count').value),
+    sel_motor_power: parseFloat(document.getElementById('sel_motor_power').value),
+    sel_motor_torque: parseFloat(document.getElementById('sel_motor_torque').value),
+    sel_motor_rpm: parseFloat(document.getElementById('sel_motor_rpm').value),
+    sel_motor_eff: parseFloat(document.getElementById('sel_motor_eff').value),
+    sel_hyd_motor_displacement: parseFloat(document.getElementById('sel_hyd_motor_displacement').value),
+    sel_hyd_motor_max_rpm: parseFloat(document.getElementById('sel_hyd_motor_max_rpm').value),
+    sel_elec_motor_rpm: parseFloat(document.getElementById('sel_elec_motor_rpm').value),
+    sel_hyd_num_pumps: parseFloat(document.getElementById('sel_hyd_num_pumps').value),
+    sel_hyd_pump_displacement: parseFloat(document.getElementById('sel_hyd_pump_displacement').value),
+    sel_hyd_charge_pressure: parseFloat(document.getElementById('sel_hyd_charge_pressure').value)
   };
 }
 
@@ -161,8 +175,14 @@ document.getElementById('inputForm').addEventListener('submit', function (event)
   event.preventDefault();
   const inputs = readInputs();
   for (const key in inputs) {
-    if (key === 'winch_type') continue;
-    if (inputs[key] === null || isNaN(inputs[key])) {
+    if (key === 'winch_type' || key === 'winch_model') {
+      if (!inputs[key]) {
+        alert(`Missing value: ${key}`);
+        return;
+      }
+      continue;
+    }
+        if (inputs[key] === null || isNaN(inputs[key])) {
       alert(`Missing or invalid value: ${key}`);
       return;
     }

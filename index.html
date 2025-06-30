@@ -20,31 +20,35 @@
       </select>
     </label>
 
+    <label>Winch Model
+      <input type="text" id="winch_model" placeholder="Dynacon 1103" required>
+    </label>
+
     <label>Safe Working Load (kgf)
-      <input type="number" step="any" id="req_swl" placeholder="13000" required>
+      <input type="number" step="any" id="req_swl" placeholder="9500" required>
     </label>
 
     <label>Required Line Speed (m/min)
-      <input type="number" step="any" id="req_speed" placeholder="90" required>
+      <input type="number" step="any" id="req_speed" placeholder="30" required>
     </label>
 
     <label>Cable Diameter (mm)
-      <input type="number" step="any" id="sel_umb_dia" placeholder="41" required>
+      <input type="number" step="any" id="sel_umb_dia" placeholder="28.5" required>
     </label>
 
     <label>Cable Length (m)
-      <input type="number" step="any" id="sel_cable_length" placeholder="3500" required>
+      <input type="number" step="any" id="sel_cable_length" placeholder="4400" required>
     </label>
     <label>Payload Weight in Water (kgf)
       <input type="number" step="any" id="sel_payload_weight" placeholder="1537" required>
     </label>
 
-    <label>Selected System Power (hp)
-      <input type="number" step="any" id="sel_pwr" placeholder="100">
+    <label>Electric Motor Power (hp)
+      <input type="number" step="any" id="sel_elec_motor_power" placeholder="50">
     </label>
 
-    <label>Hydraulic System Pressure (psi)
-      <input type="number" step="any" id="sel_hyd_sys_press" placeholder="3000">
+    <label>Max Operating PSI
+      <input type="number" step="any" id="sel_hyd_system_psi_max" placeholder="4000">
     </label>
 
       <label>Hydra-Mech Efficiency (0–1)
@@ -52,15 +56,15 @@
       </label>
 
       <label>Drum Core Diameter (in)
-        <input type="number" step="any" id="sel_drum_core_dia" placeholder="20" required>
+        <input type="number" step="any" id="sel_drum_core_dia" placeholder="70" required>
       </label>
 
       <label>Lebus Groove Thickness (in)
-        <input type="number" step="any" id="sel_drum_lebus_thickness" placeholder="0.5" required>
+        <input type="number" step="any" id="sel_drum_lebus_thickness" placeholder="0.625" required>
       </label>
 
       <label>Drum Flange Diameter (in)
-        <input type="number" step="any" id="sel_drum_flange_dia" placeholder="40" required>
+        <input type="number" step="any" id="sel_drum_flange_dia" placeholder="110" required>
       </label>
 
       <label>Drum Flange-to-Flange Width (in)
@@ -68,11 +72,62 @@
       </label>
 
       <label>Drum Wraps per Layer
-        <input type="number" step="any" id="sel_drum_wraps_per_layer" placeholder="20" required>
+        <input type="number" step="any" id="sel_drum_wraps_per_layer" placeholder="0" required>
       </label>
 
-      <label>Umbilical Weight (lbf/ft)
-        <input type="number" step="any" id="sel_umb_weight" placeholder="1.2" required>
+      <label>Cable Weight in Water (kgf/m)
+        <input type="number" step="any" id="sel_umb_weight" placeholder="2" required>
+      </label>
+
+      <label>Pinion Gear Ratio
+        <input type="number" step="any" id="sel_pinion_ratio" placeholder="5.24" required>
+      </label>
+
+      <label>Gearbox Ratio
+        <input type="number" step="any" id="sel_gearbox_ratio" placeholder="20" required>
+      </label>
+
+      <label>Number of Drive Motors
+        <input type="number" step="any" id="sel_motor_count" placeholder="6" required>
+      </label>
+
+      <label>Motor Power (W)
+        <input type="number" step="any" id="sel_motor_power" placeholder="44000" required>
+      </label>
+
+      <label>Motor Torque (N·m)
+        <input type="number" step="any" id="sel_motor_torque" placeholder="192" required>
+      </label>
+
+      <label>Motor RPM
+        <input type="number" step="any" id="sel_motor_rpm" placeholder="2200" required>
+      </label>
+
+      <label>Motor Efficiency
+        <input type="number" step="any" id="sel_motor_eff" placeholder="0.96" required>
+      </label>
+
+      <label>Hydraulic Motor Displacement (cc)
+        <input type="number" step="any" id="sel_hyd_motor_displacement" placeholder="105" required>
+      </label>
+
+      <label>Hydraulic Motor Max RPM
+        <input type="number" step="any" id="sel_hyd_motor_max_rpm" placeholder="3700" required>
+      </label>
+
+      <label>Pump RPM
+        <input type="number" step="any" id="sel_elec_motor_rpm" placeholder="1780" required>
+      </label>
+
+      <label>Number of Pumps
+        <input type="number" step="any" id="sel_hyd_num_pumps" placeholder="1" required>
+      </label>
+
+      <label>Closed Loop Pump Displacement (cc)
+        <input type="number" step="any" id="sel_hyd_pump_displacement" placeholder="108" required>      </label>
+
+      <label>Charge Pressure (psi)
+        <input type="number" step="any" id="sel_hyd_charge_pressure" placeholder="300" required>
       </label>
 
     <button type="submit">Save & Calculate</button>
