@@ -328,9 +328,8 @@ function calculateDrumLayers(inputs) {
       actualFreeFlangeBare_in: actualFreeFlangeBare.to('inch').toNumber(),
       layers
     };
-    console.log('calculateDrumLayers result', result);
+    console.log('calculateDrumLayers result', result),
     return result;
-
   } catch (err) {
     console.error('calculateDrumLayers error', err);
     return {
