@@ -56,6 +56,12 @@ function fillInputs(data) {
   }
 }
 
+function clearInputs() {
+  document.querySelectorAll('#inputForm input, #inputForm select').forEach(el => {
+    el.value = '';
+  });
+}
+
 function populateConfigSelect() {
   const select = document.getElementById('configSelect');
   const configs = getConfigs();
@@ -78,6 +84,7 @@ function populateConfigSelect() {
 }
 
 function loadConfig(name) {
+  clearInputs();
   const configs = getConfigs();
   if (configs[name]) {
     fillInputs(configs[name]);
