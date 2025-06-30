@@ -54,7 +54,7 @@ function populateConfigSelect() {
   });
   if (select.options.length === 0) {
     const def = 'Default';
-    configs[def] = readInputs();
+    configs[def] = {};
     saveConfigs(configs);
     const opt = document.createElement('option');
     opt.value = def;
@@ -161,6 +161,7 @@ document.getElementById('inputForm').addEventListener('submit', function (event)
   event.preventDefault();
   const inputs = readInputs();
   for (const key in inputs) {
+    if (key === 'winch_type') continue;
     if (inputs[key] === null || isNaN(inputs[key])) {
       alert(`Missing or invalid value: ${key}`);
       return;
