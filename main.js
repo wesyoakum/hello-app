@@ -249,9 +249,13 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 function calculateDrumLayers(inputs) {
-  const u = math.unit;
-    const PACKING_FACTOR = 0.866; // radial increment multiplier for cross-lay spooling
+  const PACKING_FACTOR = 0.866; // radial increment multiplier for cross-lay spooling
+
   console.log('calculateDrumLayers inputs', inputs);
+    if (typeof math === 'undefined' || !math.unit) {
+      throw new Error('math.js library is required for calculateDrumLayers');
+    }
+    const u = math.unit;
   try {
     const cableDia = u(inputs.sel_umb_dia, 'mm').to('inch');
     const flangeToFlange = u(inputs.sel_drum_flange_to_flange, 'inch');
@@ -328,7 +332,8 @@ function calculateDrumLayers(inputs) {
     return result;
 
   } catch (err) {
-      console.error('calculateDrumLayers error', err);
+    console.error('calculateDrumLayers error', err);
+    return {
       error: err.message,
       layers: []
     };
