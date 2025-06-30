@@ -99,6 +99,7 @@ function loadConfig(name) {
   if (configs[name]) {
     fillInputs(configs[name]);
         updateFieldVisibility();
+    console.log('loadConfig', name, configs[name]);
 
     const inputs = readInputs();
     const valid = Object.keys(inputs).every(key => {
@@ -107,6 +108,7 @@ function loadConfig(name) {
     });
     if (valid) {
       const results = calculateDrumLayers(inputs);
+      console.log('loadConfig calculation', results);
       document.getElementById('layers').textContent = JSON.stringify(results, null, 2);
     } else {
       document.getElementById('layers').textContent = '';
@@ -200,6 +202,7 @@ document.getElementById('inputForm').addEventListener('submit', function (event)
   event.preventDefault();
     updateFieldVisibility();
   const inputs = readInputs();
+  console.log('submit inputs', inputs);
   for (const key in inputs) {
     if (key === 'winch_type' || key === 'winch_model') {
       if (!inputs[key]) {
@@ -214,6 +217,7 @@ document.getElementById('inputForm').addEventListener('submit', function (event)
     }
   }
   const layerResults = calculateDrumLayers(inputs);
+  console.log('layerResults', layerResults);
   document.getElementById('layers').textContent = JSON.stringify(layerResults, null, 2);
 });
 
@@ -247,6 +251,7 @@ window.addEventListener('DOMContentLoaded', () => {
 function calculateDrumLayers(inputs) {
   const u = math.unit;
     const PACKING_FACTOR = 0.866; // radial increment multiplier for cross-lay spooling
+  console.log('calculateDrumLayers inputs', inputs);
   try {
     const cableDia = u(inputs.sel_umb_dia, 'mm').to('inch');
     const flangeToFlange = u(inputs.sel_drum_flange_to_flange, 'inch');
@@ -311,7 +316,7 @@ function calculateDrumLayers(inputs) {
 
     const fullDrumDia = currentRadius.multiply(2);
 
-    return {
+    const result = {
       numLayers: layers.length,
       bareDrumDiameter_in: bareDrumDia.to('inch').toNumber(),
       fullDrumDiameter_in: fullDrumDia.to('inch').toNumber(),
@@ -319,9 +324,11 @@ function calculateDrumLayers(inputs) {
       actualFreeFlangeBare_in: actualFreeFlangeBare.to('inch').toNumber(),
       layers
     };
+    console.log('calculateDrumLayers result', result);
+    return result;
 
   } catch (err) {
-    return {
+      console.error('calculateDrumLayers error', err);
       error: err.message,
       layers: []
     };
