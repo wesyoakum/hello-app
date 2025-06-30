@@ -198,6 +198,7 @@ function importConfigs(file) {
 // Form submission
 document.getElementById('inputForm').addEventListener('submit', function (event) {
   event.preventDefault();
+    updateFieldVisibility();
   const inputs = readInputs();
   for (const key in inputs) {
     if (key === 'winch_type' || key === 'winch_model') {
@@ -207,13 +208,10 @@ document.getElementById('inputForm').addEventListener('submit', function (event)
       }
       continue;
     }
-        if (inputs[key] === null || isNaN(inputs[key])) {
+    if (inputs[key] === null || isNaN(inputs[key])) {
       alert(`Missing or invalid value: ${key}`);
       return;
     }
-      updateFieldVisibility();
-
-  document.getElementById('winch_type').addEventListener('change', updateFieldVisibility);
   }
   const layerResults = calculateDrumLayers(inputs);
   document.getElementById('layers').textContent = JSON.stringify(layerResults, null, 2);
