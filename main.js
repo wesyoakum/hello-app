@@ -1,4 +1,4 @@
-// Configuration management 2507010903
+// Configuration management 2507010927
 const CONFIG_KEY = 'winch_configs';
 
 function getConfigs() {
@@ -23,37 +23,49 @@ function updateFieldVisibility() {
   });
 }
 
+function getStringValue(id) {
+  const el = document.getElementById(id);
+  return el ? el.value : '';
+}
+
+function getNumericValue(id) {
+  const el = document.getElementById(id);
+  if (!el) return null;
+  const num = parseFloat(el.value);
+  return isNaN(num) ? null : num;
+}
+
 function readInputs() {
   return {
-    winch_type: document.getElementById('winch_type').value,
-    winch_model: document.getElementById('winch_model').value,
-    req_swl: parseFloat(document.getElementById('req_swl').value),
-    req_speed: parseFloat(document.getElementById('req_speed').value),
-    sel_umb_dia: parseFloat(document.getElementById('sel_umb_dia').value),
-    sel_cable_length: parseFloat(document.getElementById('sel_cable_length').value),
-    sel_umb_weight: parseFloat(document.getElementById('sel_umb_weight').value),
-    sel_drum_core_dia: parseFloat(document.getElementById('sel_drum_core_dia').value),
-    sel_drum_lebus_thickness: parseFloat(document.getElementById('sel_drum_lebus_thickness').value),
-    sel_drum_flange_dia: parseFloat(document.getElementById('sel_drum_flange_dia').value),
-    sel_drum_flange_to_flange: parseFloat(document.getElementById('sel_drum_flange_to_flange').value),
-    sel_drum_wraps_per_layer: parseFloat(document.getElementById('sel_drum_wraps_per_layer').value),
-    sel_payload_weight: parseFloat(document.getElementById('sel_payload_weight').value),
-    sel_elec_motor_power: parseFloat(document.getElementById('sel_elec_motor_power').value),
-    sel_hyd_system_psi_max: parseFloat(document.getElementById('sel_hyd_system_psi_max').value),
-    sel_hyd_mech_efficiency: parseFloat(document.getElementById('sel_hyd_mech_efficiency').value),
-    sel_pinion_ratio: parseFloat(document.getElementById('sel_pinion_ratio').value),
-    sel_gearbox_ratio: parseFloat(document.getElementById('sel_gearbox_ratio').value),
-    sel_motor_count: parseFloat(document.getElementById('sel_motor_count').value),
-    sel_motor_power: parseFloat(document.getElementById('sel_motor_power').value),
-    sel_motor_torque: parseFloat(document.getElementById('sel_motor_torque').value),
-    sel_motor_rpm: parseFloat(document.getElementById('sel_motor_rpm').value),
-    sel_motor_eff: parseFloat(document.getElementById('sel_motor_eff').value),
-    sel_hyd_motor_displacement: parseFloat(document.getElementById('sel_hyd_motor_displacement').value),
-    sel_hyd_motor_max_rpm: parseFloat(document.getElementById('sel_hyd_motor_max_rpm').value),
-    sel_elec_motor_rpm: parseFloat(document.getElementById('sel_elec_motor_rpm').value),
-    sel_hyd_num_pumps: parseFloat(document.getElementById('sel_hyd_num_pumps').value),
-    sel_hyd_pump_displacement: parseFloat(document.getElementById('sel_hyd_pump_displacement').value),
-    sel_hyd_charge_pressure: parseFloat(document.getElementById('sel_hyd_charge_pressure').value)
+    winch_type: getStringValue('winch_type'),
+    winch_model: getStringValue('winch_model'),
+    req_swl: getNumericValue('req_swl'),
+    req_speed: getNumericValue('req_speed'),
+    sel_umb_dia: getNumericValue('sel_umb_dia'),
+    sel_cable_length: getNumericValue('sel_cable_length'),
+    sel_umb_weight: getNumericValue('sel_umb_weight'),
+    sel_drum_core_dia: getNumericValue('sel_drum_core_dia'),
+    sel_drum_lebus_thickness: getNumericValue('sel_drum_lebus_thickness'),
+    sel_drum_flange_dia: getNumericValue('sel_drum_flange_dia'),
+    sel_drum_flange_to_flange: getNumericValue('sel_drum_flange_to_flange'),
+    sel_drum_wraps_per_layer: getNumericValue('sel_drum_wraps_per_layer'),
+    sel_payload_weight: getNumericValue('sel_payload_weight'),
+    sel_elec_motor_power: getNumericValue('sel_elec_motor_power'),
+    sel_hyd_system_psi_max: getNumericValue('sel_hyd_system_psi_max'),
+    sel_hyd_mech_efficiency: getNumericValue('sel_hyd_mech_efficiency'),
+    sel_pinion_ratio: getNumericValue('sel_pinion_ratio'),
+    sel_gearbox_ratio: getNumericValue('sel_gearbox_ratio'),
+    sel_motor_count: getNumericValue('sel_motor_count'),
+    sel_motor_power: getNumericValue('sel_motor_power'),
+    sel_motor_torque: getNumericValue('sel_motor_torque'),
+    sel_motor_rpm: getNumericValue('sel_motor_rpm'),
+    sel_motor_eff: getNumericValue('sel_motor_eff'),
+    sel_hyd_motor_displacement: getNumericValue('sel_hyd_motor_displacement'),
+    sel_hyd_motor_max_rpm: getNumericValue('sel_hyd_motor_max_rpm'),
+    sel_elec_motor_rpm: getNumericValue('sel_elec_motor_rpm'),
+    sel_hyd_num_pumps: getNumericValue('sel_hyd_num_pumps'),
+    sel_hyd_pump_displacement: getNumericValue('sel_hyd_pump_displacement'),
+    sel_hyd_charge_pressure: getNumericValue('sel_hyd_charge_pressure')
   };
 }
 
