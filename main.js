@@ -462,15 +462,15 @@ function drawDrumVisualization(layers, inputs) {
   // wraps
   drumCtx.strokeStyle = 'blue';
   drumCtx.lineWidth = 1;
+  const maxEffWraps = Math.max(...layers.map(l => l.wrapsEffective || l.wrapsAvailable));
+  const baseSpacing = flangeSpacing / maxEffWraps;
   let y = coreRadius + lebus + cableDia / 2;
   for (let row = 0; row < layers.length; row++) {
     const wraps = layers[row].wrapsAvailable;
-    const effWraps = layers[row].wrapsEffective || wraps;
-    const spacing = flangeSpacing / effWraps;
-    const startLeft = flangeThickness + spacing / 2;
-    const startRight = flangeThickness + flangeSpacing - spacing / 2;
+    const startLeft = flangeThickness + baseSpacing / 2;
+    const startRight = flangeThickness + flangeSpacing - baseSpacing / 2;
     for (let i = 0; i < wraps; i++) {
-      const x = row % 2 === 0 ? startLeft + i * spacing : startRight - i * spacing;
+      const x = row % 2 === 0 ? startLeft + i * baseSpacing : startRight - i * baseSpacing;
       drumCtx.beginPath();
       drumCtx.arc(toX(x), toY(y), (cableDia / 2) * scale, 0, Math.PI * 2);
       drumCtx.stroke();
