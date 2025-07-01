@@ -309,8 +309,10 @@ function clearResults() {
   }
   const plot1 = document.getElementById('ahcPlot1');
   const plot2 = document.getElementById('ahcPlot2');
-  if (plot1) Plotly.purge(plot1);
-  if (plot2) Plotly.purge(plot2);
+  if (typeof Plotly !== 'undefined') {
+    if (plot1) Plotly.purge(plot1);
+    if (plot2) Plotly.purge(plot2);
+  }
 }
 
 function displayResults(results, inputs) {
