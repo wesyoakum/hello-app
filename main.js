@@ -560,7 +560,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
     yaxis: { title: 'Maximum Vertical Speed (m/s)', range: [0, 2.5] },
     shapes: shapes1,
     width: document.getElementById('ahcPlot1').clientWidth,
-    height: 400
+    height: 1000
   };
 
   Plotly.newPlot('ahcPlot1', data1, layout1, {displaylogo: false});
@@ -607,7 +607,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
     xaxis: { title: 'Wave Period (s)', range: [4, 16] },
     yaxis: { title: 'Vertical Displacement (m)', range: [0, 8] },
     width: document.getElementById('ahcPlot2').clientWidth,
-    height: 400
+    height: 1000
   };
 
   Plotly.newPlot('ahcPlot2', data2, layout2, {displaylogo: false});
