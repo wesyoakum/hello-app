@@ -93,6 +93,20 @@ function populateConfigSelect() {
   }
 }
 
+function tryCalculateAndDisplay() {
+  const inputs = readInputs();
+  const valid = Object.keys(inputs).every(key => {
+    if (key === 'winch_type' || key === 'winch_model') return true;
+    return inputs[key] !== null && !isNaN(inputs[key]);
+  });
+  if (valid) {
+    const results = calculateDrumLayers(inputs);
+    document.getElementById('layers').textContent = JSON.stringify(results, null, 2);
+  } else {
+    document.getElementById('layers').textContent = '';
+  }
+}
+
 function loadConfig(name) {
   clearInputs();
   const configs = getConfigs();
@@ -100,19 +114,7 @@ function loadConfig(name) {
     fillInputs(configs[name]);
         updateFieldVisibility();
     console.log('loadConfig', name, configs[name]);
-
-    const inputs = readInputs();
-    const valid = Object.keys(inputs).every(key => {
-      if (key === 'winch_type' || key === 'winch_model') return true;
-      return inputs[key] !== null && !isNaN(inputs[key]);
-    });
-    if (valid) {
-      const results = calculateDrumLayers(inputs);
-      console.log('loadConfig calculation', results);
-      document.getElementById('layers').textContent = JSON.stringify(results, null, 2);
-    } else {
-      document.getElementById('layers').textContent = '';
-    }
+    tryCalculateAndDisplay();
   }
 }
 
@@ -138,43 +140,7 @@ function addNewConfig() {
 }
 
 function deleteConfig() {
-  const select = document.getElementById('configSelect');
-  const name = select.value;
-  if (!confirm(`Delete configuration "${name}"?`)) return;
-  const configs = getConfigs();
-  delete configs[name];
-  saveConfigs(configs);
-  populateConfigSelect();
-  if (select.options.length) {
-    select.value = select.options[0].value;
-    loadConfig(select.value);
-  } else {
-    document.getElementById('layers').textContent = '';
-  }
-}
-
-function renameConfig() {
-  const select = document.getElementById('configSelect');
-  const oldName = select.value;
-  const newName = prompt('New name:', oldName);
-  if (!newName || newName === oldName) return;
-  const configs = getConfigs();
-  if (configs[newName]) {
-    alert('A configuration with that name already exists');
-    return;
-  }
-  configs[newName] = configs[oldName];
-  delete configs[oldName];
-  saveConfigs(configs);
-  populateConfigSelect();
-  select.value = newName;
-}
-
-function exportConfigs() {
-  const data = JSON.stringify(getConfigs());
-  const blob = new Blob([data], {type: 'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+@@ -178,95 +180,84 @@ function exportConfigs() {
   a.href = url;
   a.download = 'configs.json';
   a.click();
@@ -200,25 +166,8 @@ function importConfigs(file) {
 // Form submission
 document.getElementById('inputForm').addEventListener('submit', function (event) {
   event.preventDefault();
-    updateFieldVisibility();
-  const inputs = readInputs();
-  console.log('submit inputs', inputs);
-  for (const key in inputs) {
-    if (key === 'winch_type' || key === 'winch_model') {
-      if (!inputs[key]) {
-        alert(`Missing value: ${key}`);
-        return;
-      }
-      continue;
-    }
-    if (inputs[key] === null || isNaN(inputs[key])) {
-      alert(`Missing or invalid value: ${key}`);
-      return;
-    }
-  }
-  const layerResults = calculateDrumLayers(inputs);
-  console.log('layerResults', layerResults);
-  document.getElementById('layers').textContent = JSON.stringify(layerResults, null, 2);
+  updateFieldVisibility();
+  tryCalculateAndDisplay();
 });
 
 // Configuration button handlers
@@ -244,6 +193,12 @@ window.addEventListener('DOMContentLoaded', () => {
       importConfigs(e.target.files[0]);
     }
     e.target.value = '';
+  });
+  document.querySelectorAll('#inputForm input, #inputForm select').forEach(el => {
+    el.addEventListener('input', () => {
+      updateFieldVisibility();
+      tryCalculateAndDisplay();
+    });
   });
   select.addEventListener('change', () => loadConfig(select.value));
 });
