@@ -337,7 +337,7 @@ function displayResults(results, inputs) {
       `<td>${r.depth_m.toFixed(2)}</td>` +
       `<td>${r.tension_kgf.toFixed(1)}</td>` +
       `<td>${r.available_tension_kgf.toFixed(1)}</td>` +
-      `<td>${r.actual_speed_mpm.toFixed(2)}</td>` +
+      `<td>${r.available_speed_mpm.toFixed(2)}</td>` +
       `<td>${r.rpm_speed_mpm.toFixed(2)}</td>` +
       `<td>${r.power_speed_mpm.toFixed(2)}</td>` +
       `<td>${r.required_pressure_psi !== null ? r.required_pressure_psi.toFixed(1) : '-'}</td>`;
@@ -347,7 +347,7 @@ function displayResults(results, inputs) {
   const depths = results.combined.map(r => r.depth_m).slice().reverse();
   const tensionData = results.combined.map(r => r.tension_kgf).slice().reverse();
   const availTensionData = results.combined.map(r => r.available_tension_kgf).slice().reverse();
-  const actualSpeedData = results.combined.map(r => r.actual_speed_mpm).slice().reverse();
+  const availableSpeedData = results.combined.map(r => r.available_speed_mpm).slice().reverse();
   const rpmSpeedData = results.combined.map(r => r.rpm_speed_mpm).slice().reverse();
   const powerSpeedData = results.combined.map(r => r.power_speed_mpm).slice().reverse();
 
@@ -355,19 +355,19 @@ function displayResults(results, inputs) {
     depths,
     tensionData,
     availTensionData,
-    actualSpeedData,
+    availableSpeedData,
     rpmSpeedData,
     powerSpeedData,
     inputs.req_swl,
     inputs.req_speed
   );
   
-  const availSpeedsMs = results.combined.map(r => r.actual_speed_mpm / 60).slice().reverse();
+  const availSpeedsMs = results.combined.map(r => r.available_speed_mpm / 60).slice().reverse();
   plotAhcPerformance(inputs.req_speed / 60, availSpeedsMs);
     drawDrumVisualization(results.layers, inputs);
 }
 
-function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powerSpeed, swl, reqSpeed) {
+function renderCharts(depths, tension, availTension, availableSpeed, rpmSpeed, powerSpeed, swl, reqSpeed) {
   if (typeof Chart === 'undefined') return;
 
   if (tensionChart) tensionChart.destroy();
@@ -398,7 +398,7 @@ function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powe
     data: {
       labels: depths,
       datasets: [
-        { label: 'Actual Speed (m/min)', data: actualSpeed, borderColor: 'green', fill: false },
+        { label: 'available Speed (m/min)', data: availableSpeed, borderColor: 'green', fill: false },
         { label: 'RPM Limited Speed (m/min)', data: rpmSpeed, borderColor: 'orange', fill: false },
         { label: 'Power Limited Speed (m/min)', data: powerSpeed, borderColor: 'purple', fill: false },
         { label: 'Required Speed', data: depths.map(() => reqSpeed), borderColor: 'gray', borderDash: [5,5], fill: false, pointRadius: 0 }
