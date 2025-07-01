@@ -1,10 +1,35 @@
 body {
-      font-family: sans-serif;
-      padding: 30px;
-      max-width: 700px;
-      margin: auto;
-      background: #f9f9f9;
-    }
+  font-family: sans-serif;
+  padding: 30px;
+  margin: auto;
+  max-width: 1200px;
+  background: #f9f9f9;
+}
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sidebar {
+  flex: 0 0 100%;
+}
+
+.main {
+  flex: 1 1 auto;
+}
+
+@media (min-width: 768px) {
+  .layout {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+  .sidebar {
+    flex: 0 0 300px;
+    margin-right: 20px;
+  }
+}
 label {
       display: block;
       margin-top: 15px;
@@ -30,7 +55,6 @@ button {
 #configControls button {
       margin-top: 10px;
       margin-right: 5px;
-    }
 pre {
       background: #eee;
       padding: 15px;

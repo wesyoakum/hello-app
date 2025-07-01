@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Winch Input Form</title>
 
   <!-- math.js for unit-aware calculations -->
@@ -11,20 +12,21 @@
 <body>
 
   <h1>Winch Configuration Input</h1>
+  <div class="layout">
+    <div class="sidebar">
+      <h2>Configurations</h2>
+      <select id="configSelect"></select>
+      <div id="configControls">
+        <button id="configAdd">Add New</button>
+        <button id="configSave">Save</button>
+        <button id="configDelete">Delete</button>
+        <button id="configRename">Rename</button>
+        <button id="configExport">Export</button>
+        <input type="file" id="configImportInput" style="display:none">
+        <button id="configImport">Import</button>
+      </div>
 
-  <h2>Configurations</h2>
-  <select id="configSelect"></select>
-  <div id="configControls">
-    <button id="configAdd">Add New</button>
-    <button id="configSave">Save</button>
-    <button id="configDelete">Delete</button>
-    <button id="configRename">Rename</button>
-    <button id="configExport">Export</button>
-    <input type="file" id="configImportInput" style="display:none">
-    <button id="configImport">Import</button>
-  </div>
-
-  <form id="inputForm">
+      <form id="inputForm">
     <label>Winch Type
       <select id="winch_type" required>
         <option value="electric">Electric</option>
@@ -50,73 +52,7 @@
 
     <label>Cable Length (m)
       <input type="number" step="any" id="sel_cable_length" placeholder="4400" required>
-    </label>
-    <label>Payload Weight in Water (kgf)
-      <input type="number" step="any" id="sel_payload_weight" placeholder="1537" required>
-    </label>
-
-    <label>Electric Motor Power (hp)
-      <input type="number" step="any" id="sel_elec_motor_power" placeholder="50">
-    </label>
-
-    <label class="hydraulic-only">Max Operating PSI
-      <input type="number" step="any" id="sel_hyd_system_psi_max" placeholder="4000">
-    </label>
-
-      <label class="hydraulic-only">Hydra-Mech Efficiency (0–1)
-        <input type="number" step="any" id="sel_hyd_mech_efficiency" placeholder="0.85" required>
-      </label>
-
-      <label>Drum Core Diameter (in)
-        <input type="number" step="any" id="sel_drum_core_dia" placeholder="70" required>
-      </label>
-
-      <label>Lebus Groove Thickness (in)
-        <input type="number" step="any" id="sel_drum_lebus_thickness" placeholder="0.625" required>
-      </label>
-
-      <label>Drum Flange Diameter (in)
-        <input type="number" step="any" id="sel_drum_flange_dia" placeholder="110" required>
-      </label>
-
-      <label>Drum Flange-to-Flange Width (in)
-        <input type="number" step="any" id="sel_drum_flange_to_flange" placeholder="30" required>
-      </label>
-
-      <label>Drum Wraps per Layer
-        <input type="number" step="any" id="sel_drum_wraps_per_layer" placeholder="0" required>
-      </label>
-
-      <label>Cable Weight in Water (kgf/m)
-        <input type="number" step="any" id="sel_umb_weight" placeholder="2" required>
-      </label>
-
-      <label>Pinion Gear Ratio
-        <input type="number" step="any" id="sel_pinion_ratio" placeholder="5.24" required>
-      </label>
-
-      <label>Gearbox Ratio
-        <input type="number" step="any" id="sel_gearbox_ratio" placeholder="20" required>
-      </label>
-
-      <label>Number of Drive Motors
-        <input type="number" step="any" id="sel_motor_count" placeholder="6" required>
-      </label>
-
-      <label>Motor Power (W)
-        <input type="number" step="any" id="sel_motor_power" placeholder="44000" required>
-      </label>
-
-      <label>Motor Torque (N·m)
-        <input type="number" step="any" id="sel_motor_torque" placeholder="192" required>
-      </label>
-
-      <label>Motor RPM
-        <input type="number" step="any" id="sel_motor_rpm" placeholder="2200" required>
-      </label>
-
-      <label>Electro-Mechanical Efficiency
-        <input type="number" step="any" id="sel_motor_eff" name="sel_motor_eff" placeholder="0.96" required>
+@@ -120,34 +122,37 @@
       </label>
 
       <label class="hydraulic-only">Hydraulic Motor Displacement (cc)
@@ -141,10 +77,15 @@
       <label class="hydraulic-only">Charge Pressure (psi)
         <input type="number" step="any" id="sel_hyd_charge_pressure" placeholder="300" required>
       </label>
-  </form>
 
-  <h2>Drum Layer Calculation Results</h2>
-  <pre id="layers"></pre>
+      <button type="submit">Calculate</button>
+      </form>
+    </div>
+    <div class="main">
+      <h2>Drum Layer Calculation Results</h2>
+      <pre id="layers"></pre>
+    </div>
+  </div>
   <script src="main.js"></script>
 
 </body>
