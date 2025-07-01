@@ -465,7 +465,8 @@ function drawDrumVisualization(layers, inputs) {
   let y = coreRadius + lebus + cableDia / 2;
   for (let row = 0; row < layers.length; row++) {
     const wraps = layers[row].wrapsAvailable;
-    const spacing = flangeSpacing / wraps;
+    const effWraps = layers[row].wrapsEffective || wraps;
+    const spacing = flangeSpacing / effWraps;
     const startLeft = flangeThickness + spacing / 2;
     const startRight = flangeThickness + flangeSpacing - spacing / 2;
     for (let i = 0; i < wraps; i++) {
@@ -770,7 +771,15 @@ function calculateDrumLayers(inputs) {
         );
     if (baseWraps < 1) baseWraps = 1;
 
-    const wrapPattern = [baseWraps, Math.max(baseWraps - 1, 1)];
+    const fractional = baseWraps - Math.floor(baseWraps);
+    const isHalf = Math.abs(fractional - 0.5) < 1e-6;
+
+    const wrapPattern = isHalf
+      ? [baseWraps]
+      : [baseWraps, Math.max(baseWraps - 1, 1)];
+    const drawPattern = isHalf
+      ? [Math.floor(baseWraps)]
+      : wrapPattern.map(w => Math.round(w));
     const radInc = cableDia.multiply(PACKING_FACTOR);
     const layers = [];
     let currentRadius = bareDrumRadius;
@@ -779,7 +788,8 @@ function calculateDrumLayers(inputs) {
     let idx = 0;
 
     while (remaining.toNumber('m') > 0 && math.smaller(math.add(currentRadius, radInc), flangeRadius)) {
-      const wraps = wrapPattern[idx % wrapPattern.length];
+      const wrapsEff = wrapPattern[idx % wrapPattern.length];
+      const wrapsDraw = drawPattern[idx % drawPattern.length];
       const nextRadius = math.add(currentRadius, radInc);
       const freeFlange = math.subtract(flangeRadius, nextRadius); // compute free flange immediately
 
@@ -789,7 +799,7 @@ function calculateDrumLayers(inputs) {
       }
 
       const circumference = nextRadius.multiply(2 * Math.PI);
-      let capacity = circumference.to('m').multiply(wraps);
+      let capacity = circumference.to('m').multiply(wrapsEff);
       if (math.larger(capacity, remaining)) {
         capacity = remaining;
       }
@@ -798,7 +808,8 @@ function calculateDrumLayers(inputs) {
 
       layers.push({
         layer: idx + 1,
-        wrapsAvailable: wraps,
+        wrapsAvailable: wrapsDraw,
+        wrapsEffective: wrapsEff,
         diameter_in: nextRadius.multiply(2).to('inch').toNumber(),
         layer_capacity_m: capacity.toNumber('m'),
         cumulative_capacity_m: cumulative.toNumber('m'),
