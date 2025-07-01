@@ -417,6 +417,11 @@ function drawDrumVisualization(layers, inputs) {
   const canvas = document.getElementById('drumCanvas');
   if (!canvas) return;
   if (!drumCtx) drumCtx = canvas.getContext('2d');
+    // resize canvas to match displayed size for crisp rendering
+  const desiredWidth = canvas.clientWidth;
+  const desiredHeight = canvas.clientHeight;
+  if (canvas.width !== desiredWidth) canvas.width = desiredWidth;
+  if (canvas.height !== desiredHeight) canvas.height = desiredHeight;
   drumCtx.clearRect(0, 0, canvas.width, canvas.height);
 
   if (!layers || !layers.length) return;
