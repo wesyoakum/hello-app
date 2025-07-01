@@ -266,7 +266,7 @@ function calculateDrumLayers(inputs) {
 
     const reqFreeFlange = cableDia.multiply(2.5);
     const flangeRadius = flangeDia.divide(2);
-    const bareDrumRadius = coreDia.divide(2).add(lebusThickness);
+    const bareDrumRadius = math.add(math.divide(coreDia, 2), lebusThickness);
     const bareDrumDia = bareDrumRadius.multiply(2);
     const actualFreeFlangeBare = flangeRadius.subtract(bareDrumRadius);
 
