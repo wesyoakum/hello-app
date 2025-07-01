@@ -481,7 +481,7 @@ function drawDrumVisualization(layers, inputs) {
         wraps = Math.max(wraps - 1, 1);
       }
       const effWraps = layers[row].wrapsEffective || wraps;
-      const spacing = flangeSpacing / effWraps;
+      const spacing = (flangeSpacing - cableDia) / (effWraps-1);
       const startLeft = flangeThickness + spacing / 2;
     
       // Vertical placement for this layer:
