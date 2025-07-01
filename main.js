@@ -471,24 +471,18 @@ function drawDrumVisualization(layers, inputs) {
     const effWraps = layers[row].wrapsEffective || wraps;
     const spacing = flangeSpacing / effWraps;
     const startLeft = flangeThickness + spacing / 2;
-    const startRight = flangeThickness + flangeSpacing - spacing / 2;
-    const offset = coreRadius + lebus + cableDia / 2 + row * vertSpacing;
-    const yTop = centerY + offset;
-    const yBottom = centerY - offset;
+    
     for (let i = 0; i < wraps; i++) {
-      const x = row % 2 === 0 ? startLeft + i * spacing : startRight - i * spacing;
+      const x = startLeft + i * spacing + ((row % 2 === 1) ? spacing / 2 : 0);
       const px = toX(x);
       const r = (cableDia / 2) * scale;
-      // top wrap
       drumCtx.beginPath();
       drumCtx.arc(px, toY(yTop), r, 0, Math.PI * 2);
       drumCtx.stroke();
-      // bottom mirror wrap
       drumCtx.beginPath();
       drumCtx.arc(px, toY(yBottom), r, 0, Math.PI * 2);
       drumCtx.stroke();
     }
-  }
 }
 
 function linspace(start, end, count) {
