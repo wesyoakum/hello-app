@@ -140,7 +140,7 @@ function addNewConfig() {
 }
 
 function deleteConfig() {
-@@ -178,95 +180,84 @@ function exportConfigs() {
+  function exportConfigs() {
   a.href = url;
   a.download = 'configs.json';
   a.click();
