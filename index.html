@@ -7,6 +7,8 @@
 
   <!-- math.js for unit-aware calculations -->
   <script src="https://cdn.jsdelivr.net/npm/mathjs@11.8.0/lib/browser/math.min.js"></script>
+  <!-- chart.js for plotting results -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="styles.css">
   </head>
 <body>
@@ -150,35 +152,29 @@
               </form>
         </div>
         <div class="main">
-          <h3>Drum Layer Calculation Results</h3>
+          <h3>Winch Results</h3>
           <div id="summary"></div>
-          <table id="layerTable">
+          <table id="resultsTable">
             <thead>
               <tr>
                 <th>Layer</th>
                 <th>Diameter (in)</th>
-                <th>Wraps</th>
                 <th>Layer Capacity (m)</th>
                 <th>Cumulative Capacity (m)</th>
-                <th>Free Flange (in)</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-          
-          <h3>Winch Performance</h3>
-          <table id="performanceTable">
-            <thead>
-              <tr>
-                <th>Layer</th>
+                <th>Depth (m)</th>
+                <th>Tension (kgf)</th>
                 <th>Available Tension (kgf)</th>
+                <th>Actual Speed (m/min)</th>
                 <th>RPM-Limited Speed (m/min)</th>
                 <th>Power-Limited Speed (m/min)</th>
-                <th>Actual Speed (m/min)</th>
+                <th>Required Pressure (psi)</th>
               </tr>
             </thead>
             <tbody></tbody>
           </table>
+
+          <canvas id="tensionChart"></canvas>
+          <canvas id="speedChart"></canvas>
         </div>
       </div>
   <script src="main.js"></script>

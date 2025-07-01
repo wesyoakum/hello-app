@@ -1,6 +1,9 @@
 // Configuration management 2507010927
 const CONFIG_KEY = 'winch_configs';
 
+let tensionChart = null;
+let speedChart = null;
+
 function getConfigs() {
   try {
     return JSON.parse(localStorage.getItem(CONFIG_KEY)) || {};
@@ -98,6 +101,57 @@ function calculateWinchPerformance(inputs, layers) {
   }
 }
 
+function combineResults(inputs, layers, perf) {
+  try {
+    if (typeof math === 'undefined' || !math.unit) {
+      throw new Error('math.js library is required for combineResults');
+    }
+    const u = math.unit;
+
+    const totalGearRatio = (inputs.sel_pinion_ratio || 1) * (inputs.sel_gearbox_ratio || 1);
+    const cableLength = inputs.sel_cable_length || 0;
+    const cableWeight = inputs.sel_umb_weight || 0;
+    const disp = inputs.sel_hyd_motor_displacement;
+    const mechEff = inputs.sel_hyd_mech_efficiency || 1;
+    const charge = inputs.sel_hyd_charge_pressure || 0;
+    const psiToPa = 6894.75729;
+    const g = 9.80665;
+
+    return layers.map((l, idx) => {
+      const p = perf[idx] || {};
+      const depth = cableLength - l.cumulative_capacity_m;
+      const tension = depth * cableWeight;
+
+      let reqPress = null;
+      if (inputs.winch_type === 'hydraulic' && disp) {
+        const radius = u(l.diameter_in, 'inch').toNumber('m') / 2;
+        const tensionN = tension * g;
+        const drumTorque = tensionN * radius;
+        const motorTorque = drumTorque / (totalGearRatio * (inputs.sel_motor_count || 1));
+        const pressPa = motorTorque * 2 * Math.PI / (disp / 1e6 * mechEff);
+        reqPress = pressPa / psiToPa + charge;
+      }
+
+      return {
+        layer: l.layer,
+        diameter_in: l.diameter_in,
+        layer_capacity_m: l.layer_capacity_m,
+        cumulative_capacity_m: l.cumulative_capacity_m,
+        depth_m: depth,
+        tension_kgf: tension,
+        available_tension_kgf: p.available_tension_kgf,
+        actual_speed_mpm: p.actual_speed_mpm,
+        rpm_speed_mpm: p.rpm_speed_mpm,
+        power_speed_mpm: p.power_speed_mpm,
+        required_pressure_psi: reqPress
+      };
+    });
+  } catch (err) {
+    console.error('combineResults error', err);
+    return [];
+  }
+}
+
 function saveConfigs(configs) {
   localStorage.setItem(CONFIG_KEY, JSON.stringify(configs));
 }
@@ -123,7 +177,6 @@ function getNumericValue(id) {
   const num = parseFloat(el.value);
   return isNaN(num) ? null : num;
 }
-
 function readInputs() {
   return {
     winch_type: getStringValue('winch_type'),
@@ -173,6 +226,8 @@ function clearInputs() {
   });
 }
 
+}
+
 function populateConfigSelect() {
   const select = document.getElementById('configSelect');
   const configs = getConfigs();
@@ -196,14 +251,21 @@ function populateConfigSelect() {
 
 function clearResults() {
   document.getElementById('summary').textContent = '';
-  document.querySelector('#layerTable tbody').innerHTML = '';
-  const perfBody = document.querySelector('#performanceTable tbody');
-  if (perfBody) perfBody.innerHTML = '';
+  const body = document.querySelector('#resultsTable tbody');
+  if (body) body.innerHTML = '';
+  if (tensionChart) {
+    tensionChart.destroy();
+    tensionChart = null;
+  }
+  if (speedChart) {
+    speedChart.destroy();
+    speedChart = null;
+  }
 }
 
 function displayResults(results) {
   clearResults();
-  if (!results || results.layers.length === 0) return;
+  if (!results || !results.combined.length) return;
 
   const summary = document.getElementById('summary');
   summary.innerHTML =
@@ -212,32 +274,76 @@ function displayResults(results) {
     `Required Free Flange: ${results.reqFreeFlange_in.toFixed(2)} in<br>` +
     `Actual Free Flange Bare: ${results.actualFreeFlangeBare_in.toFixed(2)} in`;
 
-  const tbody = document.querySelector('#layerTable tbody');
-  results.layers.forEach(l => {
+  const tbody = document.querySelector('#resultsTable tbody');
+  results.combined.forEach(r => {
     const row = document.createElement('tr');
     row.innerHTML =
-      `<td>${l.layer}</td>` +
-      `<td>${l.diameter_in.toFixed(2)}</td>` +
-      `<td>${l.wrapsAvailable}</td>` +
-      `<td>${l.layer_capacity_m.toFixed(2)}</td>` +
-      `<td>${l.cumulative_capacity_m.toFixed(2)}</td>` +
-      `<td>${l.free_flange_in.toFixed(2)}</td>`;
+      `<td>${r.layer}</td>` +
+      `<td>${r.diameter_in.toFixed(2)}</td>` +
+      `<td>${r.layer_capacity_m.toFixed(2)}</td>` +
+      `<td>${r.cumulative_capacity_m.toFixed(2)}</td>` +
+      `<td>${r.depth_m.toFixed(2)}</td>` +
+      `<td>${r.tension_kgf.toFixed(1)}</td>` +
+      `<td>${r.available_tension_kgf.toFixed(1)}</td>` +
+      `<td>${r.actual_speed_mpm.toFixed(2)}</td>` +
+      `<td>${r.rpm_speed_mpm.toFixed(2)}</td>` +
+      `<td>${r.power_speed_mpm.toFixed(2)}</td>` +
+      `<td>${r.required_pressure_psi !== null ? r.required_pressure_psi.toFixed(1) : '-'}</td>`;
     tbody.appendChild(row);
   });
 
-  if (results.performance && results.performance.length) {
-    const pbody = document.querySelector('#performanceTable tbody');
-    results.performance.forEach(p => {
-      const prow = document.createElement('tr');
-      prow.innerHTML =
-        `<td>${p.layer}</td>` +
-        `<td>${p.available_tension_kgf.toFixed(1)}</td>` +
-        `<td>${p.rpm_speed_mpm.toFixed(2)}</td>` +
-        `<td>${p.power_speed_mpm.toFixed(2)}</td>` +
-        `<td>${p.actual_speed_mpm.toFixed(2)}</td>`;
-      pbody.appendChild(prow);
-    });
-  }
+  const depths = results.combined.map(r => r.depth_m);
+  const tensionData = results.combined.map(r => r.tension_kgf);
+  const availTensionData = results.combined.map(r => r.available_tension_kgf);
+  const actualSpeedData = results.combined.map(r => r.actual_speed_mpm);
+  const rpmSpeedData = results.combined.map(r => r.rpm_speed_mpm);
+  const powerSpeedData = results.combined.map(r => r.power_speed_mpm);
+
+  renderCharts(depths, tensionData, availTensionData, actualSpeedData, rpmSpeedData, powerSpeedData);
+}
+
+function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powerSpeed) {
+  if (typeof Chart === 'undefined') return;
+
+  if (tensionChart) tensionChart.destroy();
+  if (speedChart) speedChart.destroy();
+
+  const tctx = document.getElementById('tensionChart').getContext('2d');
+  tensionChart = new Chart(tctx, {
+    type: 'line',
+    data: {
+      labels: depths,
+      datasets: [
+        { label: 'Tension (kgf)', data: tension, borderColor: 'blue', fill: false },
+        { label: 'Available Tension (kgf)', data: availTension, borderColor: 'red', fill: false }
+      ]
+    },
+    options: {
+      scales: {
+        x: { title: { display: true, text: 'Depth (m)' } },
+        y: { title: { display: true, text: 'kgf' } }
+      }
+    }
+  });
+
+  const sctx = document.getElementById('speedChart').getContext('2d');
+  speedChart = new Chart(sctx, {
+    type: 'line',
+    data: {
+      labels: depths,
+      datasets: [
+        { label: 'Actual Speed (m/min)', data: actualSpeed, borderColor: 'green', fill: false },
+        { label: 'RPM Limited Speed (m/min)', data: rpmSpeed, borderColor: 'orange', fill: false },
+        { label: 'Power Limited Speed (m/min)', data: powerSpeed, borderColor: 'purple', fill: false }
+      ]
+    },
+    options: {
+      scales: {
+        x: { title: { display: true, text: 'Depth (m)' } },
+        y: { title: { display: true, text: 'Speed (m/min)' } }
+      }
+    }
+  });
 }
 
 function tryCalculateAndDisplay() {
@@ -249,7 +355,8 @@ function tryCalculateAndDisplay() {
   if (valid) {
     const drum = calculateDrumLayers(inputs);
     const perf = calculateWinchPerformance(inputs, drum.layers);
-    displayResults({ ...drum, performance: perf });
+    const combined = combineResults(inputs, drum.layers, perf);
+    displayResults({ ...drum, combined });
   } else {
     clearResults();
   }
