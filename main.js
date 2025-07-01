@@ -307,6 +307,8 @@ function clearResults() {
   if (canvas && drumCtx) {
     drumCtx.clearRect(0, 0, canvas.width, canvas.height);
   }
+    const note = document.getElementById('wraps_note');
+  if (note) note.textContent = '';
   const plot1 = document.getElementById('ahcPlot1');
   const plot2 = document.getElementById('ahcPlot2');
   if (typeof Plotly !== 'undefined') {
@@ -364,8 +366,16 @@ function displayResults(results, inputs) {
   
   const availSpeedsMs = results.combined.map(r => r.actual_speed_mpm / 60).slice().reverse();
   plotAhcPerformance(inputs.req_speed / 60, availSpeedsMs);
-    drawDrumVisualization(results.layers, inputs);
-}
+
+  const note = document.getElementById('wraps_note');
+  if (note) {
+    note.textContent = results.usedCalc
+      ? `Calculated wraps per layer used: ${results.baseWraps}`
+      : '';
+  }
+
+  drawDrumVisualization(results.layers, inputs, results.baseWraps);
+  }
 
 function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powerSpeed, swl, reqSpeed) {
   if (typeof Chart === 'undefined') return;
@@ -413,7 +423,7 @@ function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powe
   });
 }
 
-function drawDrumVisualization(layers, inputs) {
+function drawDrumVisualization(layers, inputs, baseWraps) {
   const canvas = document.getElementById('drumCanvas');
   if (!canvas) return;
   if (!drumCtx) drumCtx = canvas.getContext('2d');
@@ -472,25 +482,45 @@ function drawDrumVisualization(layers, inputs) {
     drumCtx.lineWidth = 1;
     const centerY = flangeDia / 2;
     
-    const baseWraps = layers[0] ? Math.round(layers[0].wrapsAvailable) : 0;
-    const isWhole = Number.isInteger(baseWraps) && baseWraps > 0;
+    if (!baseWraps) baseWraps = layers[0] ? layers[0].wrapsEffective : 0;
+    const isHalf = Math.abs(baseWraps % 1 - 0.5) < 1e-6;
+    const baseInt = Math.floor(baseWraps);
 
-    for (let row = 0; row < layers.length; row++) {
-      let wraps = Math.round(layers[row].wrapsAvailable);
-      if (isWhole && row % 2 === 1) {
-        wraps = Math.max(wraps - 1, 1);
-      }
-      const effWraps = layers[row].wrapsEffective || wraps;
-      const spacing = (flangeSpacing - cableDia) / (effWraps-1);
-      const startLeft = flangeThickness + spacing / 2;
-    
+    let remaining = inputs.sel_cable_length || 0;
+
+    const spacingWhole = (flangeSpacing - cableDia) / (baseWraps - 1);
+    const spacingHalf = (flangeSpacing - cableDia / 2) / (baseWraps - 0.5);
+
+    for (let row = 0; row < layers.length && remaining > 0; row++) {
+      const wraps = isHalf
+        ? baseInt
+        : row % 2 === 0
+          ? Math.round(baseWraps)
+          : Math.max(Math.round(baseWraps) - 1, 1);
+
+      const spacing = isHalf ? spacingHalf : spacingWhole;
+
       // Vertical placement for this layer:
       const offset = coreRadius + lebus + cableDia / 2 + row * vertSpacing;
       const yTop = centerY + offset;
       const yBottom = centerY - offset;
-    
-      for (let i = 0; i < wraps; i++) {
-        const x = startLeft + i * spacing + ((row % 2 === 1) ? spacing / 2 : 0);
+      const circumference = 2 * Math.PI * offset * 0.0254;
+
+      let startX, step;
+      if (row % 2 === 0) {
+        startX = flangeThickness + cableDia / 2;
+        step = spacing;
+      } else {
+        startX =
+          flangeThickness +
+          flangeSpacing -
+          cableDia / 2 -
+          (isHalf ? 0 : spacing / 2);
+        step = -spacing;
+      }
+
+      for (let i = 0; i < wraps && remaining > 0; i++) {
+        const x = startX + step * i;
         const px = toX(x);
         const r = (cableDia / 2) * scale;
         drumCtx.beginPath();
@@ -499,6 +529,8 @@ function drawDrumVisualization(layers, inputs) {
         drumCtx.beginPath();
         drumCtx.arc(px, toY(yBottom), r, 0, Math.PI * 2);
         drumCtx.stroke();
+        
+        remaining -= circumference;
       }
     }
 
@@ -788,14 +820,15 @@ function calculateDrumLayers(inputs) {
     const bareDrumDia = bareDrumRadius.multiply(2);
     const actualFreeFlangeBare = math.subtract(flangeRadius, bareDrumRadius);
 
-    let baseWraps = inputs.sel_drum_wraps_per_layer > 0
-      ? inputs.sel_drum_wraps_per_layer
-      : Math.floor(
-          math.divide(
-            math.divide(flangeToFlange.multiply(2), cableDia),
-            2
-          ).toNumber()
-        );
+    const calcWraps =
+      Math.floor(math.divide(flangeToFlange.multiply(2), cableDia).toNumber()) /
+      2;
+
+    const entered = inputs.sel_drum_wraps_per_layer;
+    const validWrap =
+      entered > 0 && Math.abs(entered * 2 - Math.round(entered * 2)) < 1e-6;
+
+    let baseWraps = validWrap ? entered : calcWraps;
     if (baseWraps < 1) baseWraps = 1;
 
     const fractional = baseWraps - Math.floor(baseWraps);
@@ -826,6 +859,8 @@ function calculateDrumLayers(inputs) {
       }
 
       const circumference = nextRadius.multiply(2 * Math.PI);
+      baseWraps,
+      usedCalc: !validWrap,
       let capacity = circumference.to('m').multiply(wrapsEff);
       if (math.larger(capacity, remaining)) {
         capacity = remaining;
