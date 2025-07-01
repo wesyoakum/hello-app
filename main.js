@@ -111,6 +111,7 @@ function combineResults(inputs, layers, perf) {
     const totalGearRatio = (inputs.sel_pinion_ratio || 1) * (inputs.sel_gearbox_ratio || 1);
     const cableLength = inputs.sel_cable_length || 0;
     const cableWeight = inputs.sel_umb_weight || 0;
+    const payload = inputs.sel_payload_weight || 0;
     const disp = inputs.sel_hyd_motor_displacement;
     const mechEff = inputs.sel_hyd_mech_efficiency || 1;
     const charge = inputs.sel_hyd_charge_pressure || 0;
@@ -120,7 +121,7 @@ function combineResults(inputs, layers, perf) {
     return layers.map((l, idx) => {
       const p = perf[idx] || {};
       const depth = cableLength - l.cumulative_capacity_m;
-      const tension = depth * cableWeight;
+      const tension = depth * cableWeight + payload;
 
       let reqPress = null;
       if (inputs.winch_type === 'hydraulic' && disp) {
@@ -290,12 +291,12 @@ function displayResults(results, inputs) {
     tbody.appendChild(row);
   });
 
-  const depths = results.combined.map(r => r.depth_m);
-  const tensionData = results.combined.map(r => r.tension_kgf);
-  const availTensionData = results.combined.map(r => r.available_tension_kgf);
-  const actualSpeedData = results.combined.map(r => r.actual_speed_mpm);
-  const rpmSpeedData = results.combined.map(r => r.rpm_speed_mpm);
-  const powerSpeedData = results.combined.map(r => r.power_speed_mpm);
+  const depths = results.combined.map(r => r.depth_m).slice().reverse();
+  const tensionData = results.combined.map(r => r.tension_kgf).slice().reverse();
+  const availTensionData = results.combined.map(r => r.available_tension_kgf).slice().reverse();
+  const actualSpeedData = results.combined.map(r => r.actual_speed_mpm).slice().reverse();
+  const rpmSpeedData = results.combined.map(r => r.rpm_speed_mpm).slice().reverse();
+  const powerSpeedData = results.combined.map(r => r.power_speed_mpm).slice().reverse();
 
   renderCharts(
     depths,
