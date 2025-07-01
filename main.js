@@ -294,11 +294,12 @@ function calculateDrumLayers(inputs) {
     console.log('calculateDrumLayers result', result)
     return result;
     
-  } catch (err) {
+  } 
+  catch (err) {
     console.error('calculateDrumLayers error', err);
     return {
       error: err.message,
       layers: []
     };
-  }
+  } 
 }
