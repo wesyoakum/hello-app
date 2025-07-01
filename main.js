@@ -261,7 +261,7 @@ function clearResults() {
   }
 }
 
-function displayResults(results) {
+function displayResults(results, inputs) {
   clearResults();
   if (!results || !results.combined.length) return;
 
@@ -297,10 +297,19 @@ function displayResults(results) {
   const rpmSpeedData = results.combined.map(r => r.rpm_speed_mpm);
   const powerSpeedData = results.combined.map(r => r.power_speed_mpm);
 
-  renderCharts(depths, tensionData, availTensionData, actualSpeedData, rpmSpeedData, powerSpeedData);
+  renderCharts(
+    depths,
+    tensionData,
+    availTensionData,
+    actualSpeedData,
+    rpmSpeedData,
+    powerSpeedData,
+    inputs.req_swl,
+    inputs.req_speed
+  );
 }
 
-function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powerSpeed) {
+function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powerSpeed, swl, reqSpeed) {
   if (typeof Chart === 'undefined') return;
 
   if (tensionChart) tensionChart.destroy();
@@ -313,7 +322,8 @@ function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powe
       labels: depths,
       datasets: [
         { label: 'Tension (kgf)', data: tension, borderColor: 'blue', fill: false },
-        { label: 'Available Tension (kgf)', data: availTension, borderColor: 'red', fill: false }
+        { label: 'Available Tension (kgf)', data: availTension, borderColor: 'red', fill: false },
+        { label: 'SWL', data: depths.map(() => swl), borderColor: 'gray', borderDash: [5,5], fill: false, pointRadius: 0 }
       ]
     },
     options: {
@@ -332,7 +342,8 @@ function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powe
       datasets: [
         { label: 'Actual Speed (m/min)', data: actualSpeed, borderColor: 'green', fill: false },
         { label: 'RPM Limited Speed (m/min)', data: rpmSpeed, borderColor: 'orange', fill: false },
-        { label: 'Power Limited Speed (m/min)', data: powerSpeed, borderColor: 'purple', fill: false }
+        { label: 'Power Limited Speed (m/min)', data: powerSpeed, borderColor: 'purple', fill: false },
+        { label: 'Required Speed', data: depths.map(() => reqSpeed), borderColor: 'gray', borderDash: [5,5], fill: false, pointRadius: 0 }
       ]
     },
     options: {
@@ -354,7 +365,7 @@ function tryCalculateAndDisplay() {
     const drum = calculateDrumLayers(inputs);
     const perf = calculateWinchPerformance(inputs, drum.layers);
     const combined = combineResults(inputs, drum.layers, perf);
-    displayResults({ ...drum, combined });
+    displayResults({ ...drum, combined }, inputs);
   } else {
     clearResults();
   }
