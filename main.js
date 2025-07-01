@@ -226,8 +226,6 @@ function clearInputs() {
   });
 }
 
-}
-
 function populateConfigSelect() {
   const select = document.getElementById('configSelect');
   const configs = getConfigs();
