@@ -1,5 +1,41 @@
-// Configuration management 2507010927
+// Configuration management
 const CONFIG_KEY = 'winch_configs';
+
+// Default configurations bundled with the app
+const DEFAULT_CONFIGS = {
+  "Default": {},
+  "CTW513": {
+    winch_type: "hydraulic",
+    winch_model: "CTW513",
+    req_swl: 13000,
+    req_speed: 90,
+    sel_umb_dia: 41,
+    sel_cable_length: 3500,
+    sel_umb_weight: 1.2,
+    sel_drum_core_dia: 70,
+    sel_drum_lebus_thickness: 0.625,
+    sel_drum_flange_dia: 110,
+    sel_drum_flange_to_flange: 91.5,
+    sel_drum_wraps_per_layer: 56,
+    sel_payload_weight: 1537,
+    sel_elec_motor_power: 150,
+    sel_hyd_system_psi_max: 4000,
+    sel_hyd_mech_efficiency: 0.85,
+    sel_pinion_ratio: 5.24,
+    sel_gearbox_ratio: 20,
+    sel_motor_count: 6,
+    sel_motor_power: 44000,
+    sel_motor_torque: 192,
+    sel_motor_rpm: 1780,
+    sel_motor_eff: 0.96,
+    sel_hyd_motor_displacement: 105,
+    sel_hyd_motor_max_rpm: 3700,
+    sel_elec_motor_rpm: 1780,
+    sel_hyd_num_pumps: 2,
+    sel_hyd_pump_displacement: 210,
+    sel_hyd_charge_pressure: 300
+  }
+};
 
 let tensionChart = null;
 let speedChart = null;
@@ -7,9 +43,15 @@ let drumCtx = null;
 
 function getConfigs() {
   try {
-    return JSON.parse(localStorage.getItem(CONFIG_KEY)) || {};
+    const stored = JSON.parse(localStorage.getItem(CONFIG_KEY)) || {};
+    const merged = { ...DEFAULT_CONFIGS, ...stored };
+    const missing = Object.keys(DEFAULT_CONFIGS).filter(k => !(k in stored));
+    if (missing.length > 0) {
+      localStorage.setItem(CONFIG_KEY, JSON.stringify(merged));
+    }
+    return merged;
   } catch (e) {
-    return {};
+    return { ...DEFAULT_CONFIGS };
   }
 }
 
@@ -661,8 +703,10 @@ document.getElementById('inputForm').addEventListener('submit', function (event)
 // Configuration button handlers
 window.addEventListener('DOMContentLoaded', () => {
   populateConfigSelect();
-   const select = document.getElementById('configSelect');
-  if (select.value) loadConfig(select.value);
+  const select = document.getElementById('configSelect');
+  if (getConfigs()['CTW513']) {
+    select.value = 'CTW513';
+  }  if (select.value) loadConfig(select.value);
   updateFieldVisibility();
 
   document.getElementById('winch_type').addEventListener('change', updateFieldVisibility);
