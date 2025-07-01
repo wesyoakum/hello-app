@@ -260,6 +260,10 @@ function clearResults() {
     speedChart.destroy();
     speedChart = null;
   }
+    const plot1 = document.getElementById('ahcPlot1');
+  const plot2 = document.getElementById('ahcPlot2');
+  if (plot1) Plotly.purge(plot1);
+  if (plot2) Plotly.purge(plot2);
 }
 
 function displayResults(results, inputs) {
@@ -308,6 +312,9 @@ function displayResults(results, inputs) {
     inputs.req_swl,
     inputs.req_speed
   );
+  
+  const availSpeedsMs = results.combined.map(r => r.actual_speed_mpm / 60).slice().reverse();
+  plotAhcPerformance(inputs.req_speed / 60, availSpeedsMs);
 }
 
 function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powerSpeed, swl, reqSpeed) {
@@ -354,6 +361,113 @@ function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powe
       }
     }
   });
+}
+
+function linspace(start, end, num) {
+  const arr = [];
+  const step = (end - start) / (num - 1);
+  for (let i = 0; i < num; i++) {
+    arr.push(start + step * i);
+  }
+  return arr;
+}
+
+function plotAhcPerformance(reqSpeed, availSpeeds) {
+  if (typeof Plotly === 'undefined') return;
+
+  const wavePeriods1 = linspace(8, 12, 300);
+  const vSpeeds = linspace(0, 2.5, 300);
+  const z1 = vSpeeds.map(v => wavePeriods1.map(T => v * T / Math.PI));
+
+  const data1 = [
+    {
+      x: wavePeriods1,
+      y: vSpeeds,
+      z: z1,
+      type: 'contour',
+      colorscale: 'Viridis',
+      contours: { coloring: 'heatmap' }
+    }
+  ];
+
+  const shapes1 = [
+    {
+      type: 'line',
+      x0: 8,
+      x1: 12,
+      y0: reqSpeed,
+      y1: reqSpeed,
+      line: { color: 'white', width: 2 }
+    }
+  ];
+  availSpeeds.forEach(s => {
+    shapes1.push({
+      type: 'line',
+      x0: 8,
+      x1: 12,
+      y0: s,
+      y1: s,
+      line: { color: 'white', width: 1, dash: 'dash' }
+    });
+  });
+
+  const layout1 = {
+    title: 'Plot 1',
+    xaxis: { title: 'Wave Period (s)', range: [8, 12] },
+    yaxis: { title: 'Maximum Vertical Speed (m/s)', range: [0, 2.5] },
+    shapes: shapes1,
+    width: document.getElementById('ahcPlot1').clientWidth,
+    height: 400
+  };
+
+  Plotly.newPlot('ahcPlot1', data1, layout1, {displaylogo: false});
+
+  const waveHeights = linspace(0, 8, 300);
+  const wavePeriods2 = linspace(4, 16, 300);
+  const z2 = waveHeights.map(h => wavePeriods2.map(T => Math.PI * h / T));
+
+  const data2 = [
+    {
+      x: wavePeriods2,
+      y: waveHeights,
+      z: z2,
+      type: 'contour',
+      colorscale: 'Viridis',
+      contours: { coloring: 'heatmap' }
+    },
+    {
+      x: wavePeriods2,
+      y: waveHeights,
+      z: z2,
+      type: 'contour',
+      contours: { start: reqSpeed, end: reqSpeed, size: 0 },
+      showscale: false,
+      line: { color: 'white', width: 2 }
+    }
+  ];
+
+  availSpeeds.forEach((s, i) => {
+    data2.push({
+      x: wavePeriods2,
+      y: waveHeights,
+      z: z2,
+      type: 'contour',
+      contours: { start: s, end: s, size: 0 },
+      showscale: false,
+      line: { color: 'white', width: 1, dash: 'dash' },
+      name: `Layer ${i + 1}`
+    });
+  });
+
+  const layout2 = {
+    title: 'Plot 2',
+    xaxis: { title: 'Wave Period (s)', range: [4, 16] },
+    yaxis: { title: 'Vertical Displacement (m)', range: [0, 8] },
+    width: document.getElementById('ahcPlot2').clientWidth,
+    height: 400
+  };
+
+  Plotly.newPlot('ahcPlot2', data2, layout2, {displaylogo: false});
 }
 
 function tryCalculateAndDisplay() {

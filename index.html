@@ -14,6 +14,8 @@
   <script src="https://cdn.jsdelivr.net/npm/mathjs@11.8.0/lib/browser/math.min.js"></script>
   <!-- chart.js for plotting results -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+    <!-- plotly.js for contour plots -->
+  <script src="https://cdn.plot.ly/plotly-2.25.2.min.js"></script>
   <link rel="stylesheet" href="styles.css">
   </head>
 <body>
@@ -180,6 +182,8 @@
 
           <canvas id="tensionChart"></canvas>
           <canvas id="speedChart"></canvas>
+          <div id="ahcPlot1" style="width:100%;height:400px"></div>
+          <div id="ahcPlot2" style="width:100%;height:400px"></div>
         </div>
       </div>
   <script src="main.js"></script>
