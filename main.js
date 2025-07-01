@@ -489,6 +489,7 @@ function drawDrumVisualization(layers, inputs) {
         drumCtx.stroke();
       }
     }
+  }
 
 
 function linspace(start, end, count) {
