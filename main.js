@@ -9,6 +9,95 @@ function getConfigs() {
   }
 }
 
+function calculateWinchPerformance(inputs, layers) {
+  try {
+    if (typeof math === 'undefined' || !math.unit) {
+      throw new Error('math.js library is required for calculateWinchPerformance');
+    }
+    const u = math.unit;
+
+    const toMeters = x => u(x, 'inch').toNumber('m');
+    const totalGearRatio = (inputs.sel_pinion_ratio || 1) * (inputs.sel_gearbox_ratio || 1);
+
+    const cableWeight = inputs.sel_umb_weight; // kgf per m
+    const payload = inputs.sel_payload_weight; // kgf
+
+    const g = 9.80665; // N per kgf
+
+    const perf = [];
+
+    if (inputs.winch_type === 'electric') {
+      const torque = inputs.sel_motor_torque * inputs.sel_motor_count * totalGearRatio; // N*m
+      const power = inputs.sel_motor_power * inputs.sel_motor_count * (inputs.sel_motor_eff || 1); // W
+      const rpm = inputs.sel_motor_rpm; // 1/min
+
+      layers.forEach(l => {
+        const radius = toMeters(l.diameter_in) / 2;
+        const diameter = toMeters(l.diameter_in);
+        const tensionN = (payload + cableWeight * l.cumulative_capacity_m) * g;
+
+        const availTen = torque / radius / g; // kgf
+        const rpmSpeed = rpm * diameter * Math.PI / totalGearRatio; // m/min
+        const powerSpeed = (power / tensionN) * 60; // m/min
+        const actual = Math.min(rpmSpeed, powerSpeed);
+
+        perf.push({
+          layer: l.layer,
+          available_tension_kgf: availTen,
+          rpm_speed_mpm: rpmSpeed,
+          power_speed_mpm: powerSpeed,
+          actual_speed_mpm: actual
+        });
+      });
+    } else if (inputs.winch_type === 'hydraulic') {
+      const disp = inputs.sel_hyd_motor_displacement; // cc
+      const maxRpm = inputs.sel_hyd_motor_max_rpm; // not used
+      const elecRpm = inputs.sel_elec_motor_rpm; // pump rpm
+      const elecPwr = inputs.sel_elec_motor_power; // hp
+      const pumps = inputs.sel_hyd_num_pumps;
+      const mechEff = inputs.sel_hyd_mech_efficiency || 1;
+      const sysPsi = inputs.sel_hyd_system_psi_max; // psi
+      const charge = inputs.sel_hyd_charge_pressure; // psi
+      const pumpDisp = inputs.sel_hyd_pump_displacement; // cc
+
+      const psiToPa = 6894.75729;
+      const effPress = (sysPsi - charge) * psiToPa; // Pa
+      const availTrq = disp / 1e6 * effPress * mechEff / (2 * Math.PI); // N*m
+      const totalTrq = availTrq * inputs.sel_motor_count * totalGearRatio;
+      const qAvail = pumpDisp / 1e6 * elecRpm * pumps; // m^3 per min assuming cc -> m^3
+
+      layers.forEach(l => {
+        const radius = toMeters(l.diameter_in) / 2;
+        const diameter = toMeters(l.diameter_in);
+        const tensionN = (payload + cableWeight * l.cumulative_capacity_m) * g;
+
+        const availTen = totalTrq / radius / g; // kgf
+
+        const qLtdRpm = qAvail / (inputs.sel_motor_count * (disp / 1e6)) ; // 1/min
+        const speedHp = (mechEff * elecPwr * pumps * 745.7 / tensionN) * 60; // m/min (hp to W, then m/s to m/min)
+        const drumRpm = qLtdRpm / totalGearRatio;
+        const speedQ = Math.PI * diameter * drumRpm; // m/min
+
+        const actual = Math.min(speedQ, speedHp);
+
+        perf.push({
+          layer: l.layer,
+          available_tension_kgf: availTen,
+          rpm_speed_mpm: speedQ,
+          power_speed_mpm: speedHp,
+          actual_speed_mpm: actual
+        });
+      });
+    }
+
+    return perf;
+
+  } catch (err) {
+    console.error('calculateWinchPerformance error', err);
+    return [];
+  }
+}
+
 function saveConfigs(configs) {
   localStorage.setItem(CONFIG_KEY, JSON.stringify(configs));
 }
@@ -108,6 +197,8 @@ function populateConfigSelect() {
 function clearResults() {
   document.getElementById('summary').textContent = '';
   document.querySelector('#layerTable tbody').innerHTML = '';
+  const perfBody = document.querySelector('#performanceTable tbody');
+  if (perfBody) perfBody.innerHTML = '';
 }
 
 function displayResults(results) {
@@ -133,6 +224,20 @@ function displayResults(results) {
       `<td>${l.free_flange_in.toFixed(2)}</td>`;
     tbody.appendChild(row);
   });
+
+  if (results.performance && results.performance.length) {
+    const pbody = document.querySelector('#performanceTable tbody');
+    results.performance.forEach(p => {
+      const prow = document.createElement('tr');
+      prow.innerHTML =
+        `<td>${p.layer}</td>` +
+        `<td>${p.available_tension_kgf.toFixed(1)}</td>` +
+        `<td>${p.rpm_speed_mpm.toFixed(2)}</td>` +
+        `<td>${p.power_speed_mpm.toFixed(2)}</td>` +
+        `<td>${p.actual_speed_mpm.toFixed(2)}</td>`;
+      pbody.appendChild(prow);
+    });
+  }
 }
 
 function tryCalculateAndDisplay() {
@@ -142,8 +247,9 @@ function tryCalculateAndDisplay() {
     return inputs[key] !== null && !isNaN(inputs[key]);
   });
   if (valid) {
-    const results = calculateDrumLayers(inputs);
-    displayResults(results);
+    const drum = calculateDrumLayers(inputs);
+    const perf = calculateWinchPerformance(inputs, drum.layers);
+    displayResults({ ...drum, performance: perf });
   } else {
     clearResults();
   }
