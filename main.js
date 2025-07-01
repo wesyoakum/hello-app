@@ -249,8 +249,6 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 function calculateDrumLayers(inputs) {
-  const PACKING_FACTOR = 0.866; // radial increment multiplier for cross-lay spooling
-
   console.log('calculateDrumLayers inputs', inputs);
   try {
     if (typeof math === 'undefined' || !math.unit) {
@@ -258,84 +256,19 @@ function calculateDrumLayers(inputs) {
     }
     const u = math.unit;
     const cableDia = u(inputs.sel_umb_dia, 'mm').to('inch');
-    const flangeToFlange = u(inputs.sel_drum_flange_to_flange, 'inch');
-    const flangeDia = u(inputs.sel_drum_flange_dia, 'inch');
-    const coreDia = u(inputs.sel_drum_core_dia, 'inch');
-    const lebusThickness = u(inputs.sel_drum_lebus_thickness, 'inch');
-    const cableLength = u(inputs.sel_cable_length, 'm');
 
     const reqFreeFlange = cableDia.multiply(2.5);
-    const flangeRadius = flangeDia.divide(2);
-     const bareDrumRadius = math.add(math.divide(coreDia, 2), lebusThickness);
-    const bareDrumDia = bareDrumRadius.multiply(2);
-    const actualFreeFlangeBare = math.subtract(flangeRadius, bareDrumRadius);
-
-    let baseWraps = inputs.sel_drum_wraps_per_layer > 0
-      ? inputs.sel_drum_wraps_per_layer
-      : Math.floor(flangeToFlange.divide(cableDia.multiply(PACKING_FACTOR)).toNumber());
-    if (baseWraps < 1) baseWraps = 1;
-
-    const wrapPattern = [baseWraps, Math.max(baseWraps - 1, 1)];
-    const radInc = cableDia.multiply(PACKING_FACTOR);
-    const layers = [];
-    let currentRadius = bareDrumRadius;
-    let remaining = cableLength;
-    let cumulative = u(0, 'm');
-    let idx = 0;
-
-    while (remaining.toNumber('m') > 0 && math.smaller(math.add(currentRadius, radInc), flangeRadius)) {
-      const wraps = wrapPattern[idx % wrapPattern.length];
-      const nextRadius = math.add(currentRadius, radInc);
-      const freeFlange = math.subtract(flangeRadius, nextRadius); // compute free flange immediately
-
-      // stop if this layer would violate the required free flange
-      if (math.smaller(freeFlange, reqFreeFlange)) {
-        break;
-      }
-
-      const circumference = nextRadius.multiply(2 * Math.PI);
-      let capacity = circumference.to('m').multiply(wraps);
-      if (math.larger(capacity, remaining)) {
-        capacity = remaining;
-      }
-      cumulative = math.add(cumulative, capacity);
-      remaining = math.subtract(remaining, capacity);
-
-      layers.push({
-        layer: idx + 1,
-        wrapsAvailable: wraps,
-        diameter_in: nextRadius.multiply(2).to('inch').toNumber(),
-        layer_capacity_m: capacity.toNumber('m'),
-        cumulative_capacity_m: cumulative.toNumber('m'),
-        free_flange_in: freeFlange.to('inch').toNumber()
-      });
-
-      currentRadius = nextRadius; // update radius only after accepting the layer
-      idx++;
-
-      if (math.smaller(freeFlange, reqFreeFlange)) {
-        break;
-      }
-    }
-
-    const fullDrumDia = currentRadius.multiply(2);
 
     const result = {
-      numLayers: layers.length,
-      bareDrumDiameter_in: bareDrumDia.to('inch').toNumber(),
-      fullDrumDiameter_in: fullDrumDia.to('inch').toNumber(),
-      reqFreeFlange_in: reqFreeFlange.to('inch').toNumber(),
-      actualFreeFlangeBare_in: actualFreeFlangeBare.to('inch').toNumber(),
-      layers
+      minRequiredFreeFlange_in: reqFreeFlange.to('inch').toNumber()
     };
     console.log('calculateDrumLayers result', result)
     return result;
-    
+
   } catch (err) {
     console.error('calculateDrumLayers error', err);
     return {
-      error: err.message,
-      layers: []
+      error: err.message
     };
   }
 }
