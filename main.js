@@ -339,4 +339,3 @@ function calculateDrumLayers(inputs) {
     };
   } 
 }
-/n
