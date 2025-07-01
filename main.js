@@ -105,6 +105,36 @@ function populateConfigSelect() {
   }
 }
 
+function clearResults() {
+  document.getElementById('summary').textContent = '';
+  document.querySelector('#layerTable tbody').innerHTML = '';
+}
+
+function displayResults(results) {
+  clearResults();
+  if (!results || results.layers.length === 0) return;
+
+  const summary = document.getElementById('summary');
+  summary.innerHTML =
+    `Bare Drum Diameter: ${results.bareDrumDiameter_in.toFixed(2)} in<br>` +
+    `Full Drum Diameter: ${results.fullDrumDiameter_in.toFixed(2)} in<br>` +
+    `Required Free Flange: ${results.reqFreeFlange_in.toFixed(2)} in<br>` +
+    `Actual Free Flange Bare: ${results.actualFreeFlangeBare_in.toFixed(2)} in`;
+
+  const tbody = document.querySelector('#layerTable tbody');
+  results.layers.forEach(l => {
+    const row = document.createElement('tr');
+    row.innerHTML =
+      `<td>${l.layer}</td>` +
+      `<td>${l.diameter_in.toFixed(2)}</td>` +
+      `<td>${l.wrapsAvailable}</td>` +
+      `<td>${l.layer_capacity_m.toFixed(2)}</td>` +
+      `<td>${l.cumulative_capacity_m.toFixed(2)}</td>` +
+      `<td>${l.free_flange_in.toFixed(2)}</td>`;
+    tbody.appendChild(row);
+  });
+}
+
 function tryCalculateAndDisplay() {
   const inputs = readInputs();
   const valid = Object.keys(inputs).every(key => {
@@ -113,9 +143,9 @@ function tryCalculateAndDisplay() {
   });
   if (valid) {
     const results = calculateDrumLayers(inputs);
-    document.getElementById('layers').textContent = JSON.stringify(results, null, 2);
+    displayResults(results);
   } else {
-    document.getElementById('layers').textContent = '';
+    clearResults();
   }
 }
 
@@ -163,7 +193,7 @@ function deleteConfig() {
     select.value = select.options[0].value;
     loadConfig(select.value);
   } else {
-    document.getElementById('layers').textContent = '';
+    clearResults();
   }
 }
 
