@@ -3,6 +3,7 @@ const CONFIG_KEY = 'winch_configs';
 
 let tensionChart = null;
 let speedChart = null;
+let drumCtx = null;
 
 function getConfigs() {
   try {
@@ -260,7 +261,11 @@ function clearResults() {
     speedChart.destroy();
     speedChart = null;
   }
-    const plot1 = document.getElementById('ahcPlot1');
+    const canvas = document.getElementById('drumCanvas');
+  if (canvas && drumCtx) {
+    drumCtx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  const plot1 = document.getElementById('ahcPlot1');
   const plot2 = document.getElementById('ahcPlot2');
   if (plot1) Plotly.purge(plot1);
   if (plot2) Plotly.purge(plot2);
@@ -315,6 +320,7 @@ function displayResults(results, inputs) {
   
   const availSpeedsMs = results.combined.map(r => r.actual_speed_mpm / 60).slice().reverse();
   plotAhcPerformance(inputs.req_speed / 60, availSpeedsMs);
+    drawDrumVisualization(results.layers, inputs);
 }
 
 function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powerSpeed, swl, reqSpeed) {
@@ -361,6 +367,73 @@ function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powe
       }
     }
   });
+}
+
+function drawDrumVisualization(layers, inputs) {
+  const canvas = document.getElementById('drumCanvas');
+  if (!canvas) return;
+  if (!drumCtx) drumCtx = canvas.getContext('2d');
+  drumCtx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (!layers || !layers.length) return;
+
+  const flangeThickness = 1.5; // in
+  const cableDia = inputs.sel_umb_dia / 25.4; // mm to in
+  const flangeSpacing = inputs.sel_drum_flange_to_flange;
+  const flangeDia = inputs.sel_drum_flange_dia;
+  const coreDia = inputs.sel_drum_core_dia;
+  const lebus = inputs.sel_drum_lebus_thickness;
+
+  const coreRadius = coreDia / 2;
+  const flangeRadius = flangeDia / 2;
+  const vertSpacing = 0.866 * cableDia;
+
+  const marginX = 10;
+  const marginY = 5;
+  const widthIn = flangeSpacing + 2 * flangeThickness + marginX * 2;
+  const heightIn = flangeRadius + marginY;
+  const scale = Math.min(canvas.width / widthIn, canvas.height / heightIn);
+
+  const toX = x => (x + marginX) * scale;
+  const toY = y => (heightIn - y) * scale;
+
+  // flanges
+  drumCtx.fillStyle = 'lightgray';
+  drumCtx.strokeStyle = 'black';
+  drumCtx.beginPath();
+  drumCtx.rect(toX(0), toY(flangeRadius), flangeThickness * scale, flangeRadius * scale);
+  drumCtx.fill();
+  drumCtx.stroke();
+
+  drumCtx.beginPath();
+  drumCtx.rect(toX(flangeSpacing + flangeThickness), toY(flangeRadius), flangeThickness * scale, flangeRadius * scale);
+  drumCtx.fill();
+  drumCtx.stroke();
+
+  // core
+  drumCtx.fillStyle = 'white';
+  drumCtx.beginPath();
+  drumCtx.rect(toX(flangeThickness), toY(coreDia / 2), flangeSpacing * scale, (coreDia / 2) * scale);
+  drumCtx.fill();
+  drumCtx.stroke();
+
+  // wraps
+  drumCtx.strokeStyle = 'blue';
+  drumCtx.lineWidth = 1;
+  let y = coreRadius + lebus + cableDia / 2;
+  for (let row = 0; row < layers.length; row++) {
+    const wraps = layers[row].wrapsAvailable;
+    const spacing = flangeSpacing / wraps;
+    const startLeft = flangeThickness + spacing / 2;
+    const startRight = flangeThickness + flangeSpacing - spacing / 2;
+    for (let i = 0; i < wraps; i++) {
+      const x = row % 2 === 0 ? startLeft + i * spacing : startRight - i * spacing;
+      drumCtx.beginPath();
+      drumCtx.arc(toX(x), toY(y), (cableDia / 2) * scale, 0, Math.PI * 2);
+      drumCtx.stroke();
+    }
+    y += vertSpacing;
+  }
 }
 
 function linspace(start, end, num) {
