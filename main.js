@@ -140,7 +140,43 @@ function addNewConfig() {
 }
 
 function deleteConfig() {
-  function exportConfigs() {
+  const select = document.getElementById('configSelect');
+  const name = select.value;
+  if (!confirm(`Delete configuration "${name}"?`)) return;
+  const configs = getConfigs();
+  delete configs[name];
+  saveConfigs(configs);
+  populateConfigSelect();
+  if (select.options.length) {
+    select.value = select.options[0].value;
+    loadConfig(select.value);
+  } else {
+    document.getElementById('layers').textContent = '';
+  }
+}
+
+function renameConfig() {
+  const select = document.getElementById('configSelect');
+  const oldName = select.value;
+  const newName = prompt('New name:', oldName);
+  if (!newName || newName === oldName) return;
+  const configs = getConfigs();
+  if (configs[newName]) {
+    alert('A configuration with that name already exists');
+    return;
+  }
+  configs[newName] = configs[oldName];
+  delete configs[oldName];
+  saveConfigs(configs);
+  populateConfigSelect();
+  select.value = newName;
+}
+
+function exportConfigs() {
+  const data = JSON.stringify(getConfigs());
+  const blob = new Blob([data], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
   a.href = url;
   a.download = 'configs.json';
   a.click();
@@ -303,3 +339,4 @@ function calculateDrumLayers(inputs) {
     };
   } 
 }
+/n
