@@ -490,6 +490,17 @@ function drawDrumVisualization(layers, inputs) {
     }
   }
 }
+
+function linspace(start, end, count) {
+  if (count <= 0) return [];
+  if (count === 1) return [start];
+  const step = (end - start) / (count - 1);
+  const result = [];
+  for (let i = 0; i < count; i++) {
+    result.push(start + step * i);
+  }
+  return result;
+}
 function plotAhcPerformance(reqSpeed, availSpeeds) {
   if (typeof Plotly === 'undefined') return;
 
