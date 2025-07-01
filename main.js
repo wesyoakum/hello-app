@@ -467,15 +467,13 @@ function drawDrumVisualization(layers, inputs) {
     drumCtx.lineWidth = 1;
     const centerY = flangeDia / 2;
     
-    const baseWraps = Math.round(layers[0].wrapsAvailable);
-    const isWhole = Number.isInteger(baseWraps);
-    
+    const baseWraps = layers[0] ? Math.round(layers[0].wrapsAvailable) : 0;
+    const isWhole = Number.isInteger(baseWraps) && baseWraps > 0;
+
     for (let row = 0; row < layers.length; row++) {
-      let wraps;
-      if (isWhole) {
-        wraps = (row % 2 === 0) ? baseWraps : baseWraps - 1;
-      } else {
-        wraps = layers[row].wrapsAvailable;
+      let wraps = Math.round(layers[row].wrapsAvailable);
+      if (isWhole && row % 2 === 1) {
+        wraps = Math.max(wraps - 1, 1);
       }
       const effWraps = layers[row].wrapsEffective || wraps;
       const spacing = flangeSpacing / effWraps;
