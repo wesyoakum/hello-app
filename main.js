@@ -462,28 +462,34 @@ function drawDrumVisualization(layers, inputs) {
   drumCtx.fill();
   drumCtx.stroke();
 
-  // wraps
-  drumCtx.strokeStyle = 'blue';
-  drumCtx.lineWidth = 1;
-  const centerY = flangeDia / 2;
-  for (let row = 0; row < layers.length; row++) {
-    const wraps = layers[row].wrapsAvailable;
-    const effWraps = layers[row].wrapsEffective || wraps;
-    const spacing = flangeSpacing / effWraps;
-    const startLeft = flangeThickness + spacing / 2;
+    // wraps
+    drumCtx.strokeStyle = 'blue';
+    drumCtx.lineWidth = 1;
+    const centerY = flangeDia / 2;
+    for (let row = 0; row < layers.length; row++) {
+      const wraps = layers[row].wrapsAvailable;
+      const effWraps = layers[row].wrapsEffective || wraps;
+      const spacing = flangeSpacing / effWraps;
+      const startLeft = flangeThickness + spacing / 2;
     
-    for (let i = 0; i < wraps; i++) {
-      const x = startLeft + i * spacing + ((row % 2 === 1) ? spacing / 2 : 0);
-      const px = toX(x);
-      const r = (cableDia / 2) * scale;
-      drumCtx.beginPath();
-      drumCtx.arc(px, toY(yTop), r, 0, Math.PI * 2);
-      drumCtx.stroke();
-      drumCtx.beginPath();
-      drumCtx.arc(px, toY(yBottom), r, 0, Math.PI * 2);
-      drumCtx.stroke();
+      // Vertical placement for this layer:
+      const offset = coreRadius + lebus + cableDia / 2 + row * vertSpacing;
+      const yTop = centerY + offset;
+      const yBottom = centerY - offset;
+    
+      for (let i = 0; i < wraps; i++) {
+        const x = startLeft + i * spacing + ((row % 2 === 1) ? spacing / 2 : 0);
+        const px = toX(x);
+        const r = (cableDia / 2) * scale;
+        drumCtx.beginPath();
+        drumCtx.arc(px, toY(yTop), r, 0, Math.PI * 2);
+        drumCtx.stroke();
+        drumCtx.beginPath();
+        drumCtx.arc(px, toY(yBottom), r, 0, Math.PI * 2);
+        drumCtx.stroke();
+      }
     }
-}
+
 
 function linspace(start, end, count) {
   if (count <= 0) return [];
