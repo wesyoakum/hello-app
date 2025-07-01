@@ -266,9 +266,9 @@ function calculateDrumLayers(inputs) {
 
     const reqFreeFlange = cableDia.multiply(2.5);
     const flangeRadius = flangeDia.divide(2);
-    const bareDrumRadius = math.add(math.divide(coreDia, 2), lebusThickness);
+     const bareDrumRadius = math.add(math.divide(coreDia, 2), lebusThickness);
     const bareDrumDia = bareDrumRadius.multiply(2);
-    const actualFreeFlangeBare = flangeRadius.subtract(bareDrumRadius);
+    const actualFreeFlangeBare = math.subtract(flangeRadius, bareDrumRadius);
 
     let baseWraps = inputs.sel_drum_wraps_per_layer > 0
       ? inputs.sel_drum_wraps_per_layer
@@ -283,23 +283,23 @@ function calculateDrumLayers(inputs) {
     let cumulative = u(0, 'm');
     let idx = 0;
 
-    while (remaining.toNumber('m') > 0 && currentRadius.add(radInc).lt(flangeRadius)) {
+    while (remaining.toNumber('m') > 0 && math.smaller(math.add(currentRadius, radInc), flangeRadius)) {
       const wraps = wrapPattern[idx % wrapPattern.length];
-      const nextRadius = currentRadius.add(radInc);
-      const freeFlange = flangeRadius.subtract(nextRadius); // compute free flange immediately
+      const nextRadius = math.add(currentRadius, radInc);
+      const freeFlange = math.subtract(flangeRadius, nextRadius); // compute free flange immediately
 
       // stop if this layer would violate the required free flange
-      if (freeFlange.lt(reqFreeFlange)) {
+      if (math.smaller(freeFlange, reqFreeFlange)) {
         break;
       }
 
       const circumference = nextRadius.multiply(2 * Math.PI);
       let capacity = circumference.to('m').multiply(wraps);
-      if (capacity.gt(remaining)) {
+      if (math.larger(capacity, remaining)) {
         capacity = remaining;
       }
-      cumulative = cumulative.add(capacity);
-      remaining = remaining.subtract(capacity);
+      cumulative = math.add(cumulative, capacity);
+      remaining = math.subtract(remaining, capacity);
 
       layers.push({
         layer: idx + 1,
@@ -313,7 +313,7 @@ function calculateDrumLayers(inputs) {
       currentRadius = nextRadius; // update radius only after accepting the layer
       idx++;
 
-      if (freeFlange.lt(reqFreeFlange)) {
+      if (math.smaller(freeFlange, reqFreeFlange)) {
         break;
       }
     }
