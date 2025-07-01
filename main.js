@@ -419,10 +419,10 @@ function drawDrumVisualization(layers, inputs) {
 
   if (!layers || !layers.length) return;
 
-  const flangeThickness = 1.5; // in
+  const flangeDia = inputs.sel_drum_flange_dia;
+  const flangeThickness = flangeDia / 10; // represent 1/10 of the flange diameter
   const cableDia = inputs.sel_umb_dia / 25.4; // mm to in
   const flangeSpacing = inputs.sel_drum_flange_to_flange;
-  const flangeDia = inputs.sel_drum_flange_dia;
   const coreDia = inputs.sel_drum_core_dia;
   const lebus = inputs.sel_drum_lebus_thickness;
 
@@ -433,61 +433,61 @@ function drawDrumVisualization(layers, inputs) {
   const marginX = 10;
   const marginY = 5;
   const widthIn = flangeSpacing + 2 * flangeThickness + marginX * 2;
-  const heightIn = flangeRadius + marginY;
+  const heightIn = flangeDia + marginY * 2;
   const scale = Math.min(canvas.width / widthIn, canvas.height / heightIn);
 
   const toX = x => (x + marginX) * scale;
-  const toY = y => (heightIn - y) * scale;
+  const toY = y => (heightIn - marginY - y) * scale;
 
   // flanges
   drumCtx.fillStyle = 'lightgray';
   drumCtx.strokeStyle = 'black';
   drumCtx.beginPath();
-  drumCtx.rect(toX(0), toY(flangeRadius), flangeThickness * scale, flangeRadius * scale);
+  drumCtx.rect(toX(0), toY(flangeDia), flangeThickness * scale, flangeDia * scale);
   drumCtx.fill();
   drumCtx.stroke();
 
   drumCtx.beginPath();
-  drumCtx.rect(toX(flangeSpacing + flangeThickness), toY(flangeRadius), flangeThickness * scale, flangeRadius * scale);
+  drumCtx.rect(toX(flangeSpacing + flangeThickness), toY(flangeDia), flangeThickness * scale, flangeDia * scale);
   drumCtx.fill();
   drumCtx.stroke();
 
   // core
   drumCtx.fillStyle = 'white';
+  const coreBottom = (flangeDia - coreDia) / 2;
   drumCtx.beginPath();
-  drumCtx.rect(toX(flangeThickness), toY(coreDia / 2), flangeSpacing * scale, (coreDia / 2) * scale);
+  drumCtx.rect(toX(flangeThickness), toY(coreBottom + coreDia), flangeSpacing * scale, coreDia * scale);
   drumCtx.fill();
   drumCtx.stroke();
 
   // wraps
   drumCtx.strokeStyle = 'blue';
   drumCtx.lineWidth = 1;
-  const maxEffWraps = Math.max(...layers.map(l => l.wrapsEffective || l.wrapsAvailable));
-  const baseSpacing = flangeSpacing / maxEffWraps;
-  let y = coreRadius + lebus + cableDia / 2;
+  const centerY = flangeDia / 2;
   for (let row = 0; row < layers.length; row++) {
     const wraps = layers[row].wrapsAvailable;
-    const startLeft = flangeThickness + baseSpacing / 2;
-    const startRight = flangeThickness + flangeSpacing - baseSpacing / 2;
+    const effWraps = layers[row].wrapsEffective || wraps;
+    const spacing = flangeSpacing / effWraps;
+    const startLeft = flangeThickness + spacing / 2;
+    const startRight = flangeThickness + flangeSpacing - spacing / 2;
+    const offset = coreRadius + lebus + cableDia / 2 + row * vertSpacing;
+    const yTop = centerY + offset;
+    const yBottom = centerY - offset;
     for (let i = 0; i < wraps; i++) {
-      const x = row % 2 === 0 ? startLeft + i * baseSpacing : startRight - i * baseSpacing;
+      const x = row % 2 === 0 ? startLeft + i * spacing : startRight - i * spacing;
+      const px = toX(x);
+      const r = (cableDia / 2) * scale;
+      // top wrap
       drumCtx.beginPath();
-      drumCtx.arc(toX(x), toY(y), (cableDia / 2) * scale, 0, Math.PI * 2);
+      drumCtx.arc(px, toY(yTop), r, 0, Math.PI * 2);
+      drumCtx.stroke();
+      // bottom mirror wrap
+      drumCtx.beginPath();
+      drumCtx.arc(px, toY(yBottom), r, 0, Math.PI * 2);
       drumCtx.stroke();
     }
-    y += vertSpacing;
   }
 }
-
-function linspace(start, end, num) {
-  const arr = [];
-  const step = (end - start) / (num - 1);
-  for (let i = 0; i < num; i++) {
-    arr.push(start + step * i);
-  }
-  return arr;
-}
-
 function plotAhcPerformance(reqSpeed, availSpeeds) {
   if (typeof Plotly === 'undefined') return;
 
