@@ -408,9 +408,9 @@ function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powe
     data: {
       labels: depths,
       datasets: [
-        { label: 'Available Speed (m/min)', data: actualSpeed, borderColor: 'green', fill: false },
-        { label: 'RPM Limited Speed (m/min)', data: rpmSpeed, borderColor: 'orange', fill: false },
-        { label: 'Power Limited Speed (m/min)', data: powerSpeed, borderColor: 'purple', fill: false },
+        { label: 'Available Speed (m/min)', data: actualSpeed, borderColor: '#68669e', fill: false },
+        { label: 'RPM Limited Speed (m/min)', data: rpmSpeed, borderColor: '#519ba4', fill: false },
+        { label: 'Power Limited Speed (m/min)', data: powerSpeed, borderColor: '#65c98f', fill: false },
         { label: 'Required Speed', data: depths.map(() => reqSpeed), borderColor: 'gray', borderDash: [5,5], fill: false, pointRadius: 0 }
       ]
     },
@@ -457,7 +457,7 @@ function drawDrumVisualization(layers, inputs, baseWraps) {
   const toY = y => (heightIn - marginY - y) * scale;
 
   // flanges
-  drumCtx.fillStyle = 'lightgray';
+  drumCtx.fillStyle = '#5c82a4';
   drumCtx.strokeStyle = 'black';
   drumCtx.beginPath();
   drumCtx.rect(toX(0), toY(flangeDia), flangeThickness * scale, flangeDia * scale);
@@ -470,7 +470,7 @@ function drawDrumVisualization(layers, inputs, baseWraps) {
   drumCtx.stroke();
 
   // core
-  drumCtx.fillStyle = 'white';
+  drumCtx.fillStyle = '#5c82a4';
   const coreBottom = (flangeDia - coreDia) / 2;
   drumCtx.beginPath();
   drumCtx.rect(toX(flangeThickness), toY(coreBottom + coreDia), flangeSpacing * scale, coreDia * scale);
@@ -478,7 +478,7 @@ function drawDrumVisualization(layers, inputs, baseWraps) {
   drumCtx.stroke();
 
     // wraps
-    drumCtx.strokeStyle = 'blue';
+    drumCtx.strokeStyle = '#6d4688';
     drumCtx.lineWidth = 1;
     const centerY = flangeDia / 2;
     
@@ -550,6 +550,30 @@ function linspace(start, end, count) {
 function plotAhcPerformance(reqSpeed, availSpeeds) {
   if (typeof Plotly === 'undefined') return;
 
+  // custom color scales for the two contour plots
+  const colorscale1 = [
+    [0 / 8, '#6d4688'], [1 / 8, '#6d4688'],
+    [1 / 8, '#68669e'], [2 / 8, '#68669e'],
+    [2 / 8, '#5c82a4'], [3 / 8, '#5c82a4'],
+    [3 / 8, '#519ba4'], [4 / 8, '#519ba4'],
+    [4 / 8, '#4cb3a0'], [5 / 8, '#4cb3a0'],
+    [5 / 8, '#65c98f'], [6 / 8, '#65c98f'],
+    [6 / 8, '#9cdc6f'], [7 / 8, '#9cdc6f'],
+    [7 / 8, '#dfe747'], [1, '#dfe747']
+  ];
+
+  const colorscale2 = [
+    [0 / 4, '#6d4688'], [0.5 / 4, '#6d4688'],
+    [0.5 / 4, '#68669e'], [1 / 4, '#68669e'],
+    [1 / 4, '#5c82a4'], [1.5 / 4, '#5c82a4'],
+    [1.5 / 4, '#519ba4'], [2 / 4, '#519ba4'],
+    [2 / 4, '#4cb3a0'], [2.5 / 4, '#4cb3a0'],
+    [2.5 / 4, '#65c98f'], [3 / 4, '#65c98f'],
+    [3 / 4, '#9cdc6f'], [3.5 / 4, '#9cdc6f'],
+    [3.5 / 4, '#dfe747'], [1, '#dfe747'],
+    [1, '#ffffff']
+  ];
+
   const wavePeriods1 = linspace(8, 12, 300);
   const vSpeeds = linspace(0, 2.5, 300);
   const z1 = vSpeeds.map(v => wavePeriods1.map(T => v * T / Math.PI));
@@ -559,8 +583,9 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
     y: vSpeeds,
     z: z1,
     type: 'contour',
-    colorscale: 'Viridis',
-    contours: {
+    colorscale: colorscale1,
+    cmin: 0,
+    cmax: 8,    contours: {
       start: 0,
       end: 8,
       size: 0.5,
@@ -623,7 +648,9 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
     y: waveHeights,
     z: z2,
     type: 'contour',
-    colorscale: 'Viridis',
+    colorscale: colorscale2,
+    cmin: 0,
+    cmax: 4,    
     contours: {
       start: 0,
       end: 4,
