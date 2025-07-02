@@ -973,11 +973,6 @@ function calculateDrumLayers(inputs) {
       const nextRadius = math.add(currentRadius, radInc);
       const freeFlange = math.subtract(flangeRadius, nextRadius); // compute free flange immediately
 
-      // stop if this layer would violate the required free flange
-      if (math.smaller(freeFlange, reqFreeFlange)) {
-        break;
-      }
-
       const circumference = nextRadius.multiply(2 * Math.PI);
       let capacity = circumference.to('m').multiply(wrapsEff);
       if (math.larger(capacity, remaining)) {
@@ -999,9 +994,6 @@ function calculateDrumLayers(inputs) {
       currentRadius = nextRadius; // update radius only after accepting the layer
       idx++;
 
-      if (math.smaller(freeFlange, reqFreeFlange)) {
-        break;
-      }
     }
 
     const fullDrumDia = currentRadius.multiply(2);
