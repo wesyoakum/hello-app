@@ -54,6 +54,18 @@
         <label>Required Line Speed (m/min)
           <input type="number" step="any" id="req_speed" placeholder="30" required>
         </label>
+        
+        <label>Wave Height (m)
+          <input type="number" step="any" id="wave_height" placeholder="2" required>
+        </label>
+
+        <label>Wave Period (s)
+          <input type="number" step="any" id="wave_period" placeholder="10" required>
+        </label>
+
+        <label>Average Winch Offset Speed (m/min)
+          <input type="number" step="any" id="avg_offset_speed" placeholder="0" value="0" required>
+        </label>
     
         <label>Cable Diameter (mm)
           <input type="number" step="any" id="sel_umb_dia" placeholder="28.5" required>
@@ -186,6 +198,7 @@
 
           <canvas id="tensionChart"></canvas>
           <canvas id="speedChart"></canvas>
+          <div id="required_speed"></div>
           <div id="ahcPlot1" style="width:100%"></div>
           <div id="ahcPlot2" style="width:100%"></div>
         </div>

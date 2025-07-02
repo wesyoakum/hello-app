@@ -9,6 +9,9 @@ const DEFAULT_CONFIGS = {
     winch_model: "CTW513",
     req_swl: 13000,
     req_speed: 90,
+        wave_height: 2,
+    wave_period: 10,
+    avg_offset_speed: 0,
     sel_umb_dia: 41,
     sel_cable_length: 3500,
     sel_umb_weight: 1.2,
@@ -227,6 +230,9 @@ function readInputs() {
     winch_model: getStringValue('winch_model'),
     req_swl: getNumericValue('req_swl'),
     req_speed: getNumericValue('req_speed'),
+      wave_height: getNumericValue('wave_height'),
+    wave_period: getNumericValue('wave_period'),
+    avg_offset_speed: getNumericValue('avg_offset_speed'),
     sel_umb_dia: getNumericValue('sel_umb_dia'),
     sel_cable_length: getNumericValue('sel_cable_length'),
     sel_umb_weight: getNumericValue('sel_umb_weight'),
@@ -307,8 +313,10 @@ function clearResults() {
   if (canvas && drumCtx) {
     drumCtx.clearRect(0, 0, canvas.width, canvas.height);
   }
-    const note = document.getElementById('wraps_note');
+  const note = document.getElementById('wraps_note');
   if (note) note.textContent = '';
+  const reqDiv = document.getElementById('required_speed');
+  if (reqDiv) reqDiv.textContent = '';  if (note) note.textContent = '';
   const plot1 = document.getElementById('ahcPlot1');
   const plot2 = document.getElementById('ahcPlot2');
   if (typeof Plotly !== 'undefined') {
@@ -365,8 +373,16 @@ function displayResults(results, inputs) {
   );
   
   const availSpeedsMs = results.combined.map(r => r.actual_speed_mpm / 60).slice().reverse();
-  plotAhcPerformance(inputs.req_speed / 60, availSpeedsMs);
-
+  const ahcReq = calculateRequiredAHCSpeed(
+    inputs.wave_height,
+    inputs.wave_period,
+    inputs.avg_offset_speed
+  );
+  const reqDiv = document.getElementById('required_speed');
+  if (reqDiv) {
+    reqDiv.textContent = `Required AHC Speed: ${ahcReq.requiredSpeed_mpm.toFixed(2)} m/min (${ahcReq.requiredSpeed_mps.toFixed(2)} m/s)`;
+  }
+  plotAhcPerformance(ahcReq.requiredSpeed_mps, availSpeedsMs);
   const note = document.getElementById('wraps_note');
   if (note) {
     note.textContent = results.usedCalc
@@ -548,6 +564,24 @@ function linspace(start, end, count) {
   return result;
 }
 function plotAhcPerformance(reqSpeed, availSpeeds) {
+
+/**
+ * Calculate required peak AHC speed for given wave and winch conditions.
+ * @param {number} waveHeight_m  - Wave height in meters
+ * @param {number} wavePeriod_s  - Wave period in seconds
+ * @param {number} avgSpeed_mpm  - Average (offset) winch speed in m/min
+ * @returns {Object}             - { requiredSpeed_mps, requiredSpeed_mpm }
+ */
+function calculateRequiredAHCSpeed(waveHeight_m, wavePeriod_s, avgSpeed_mpm) {
+  const peakSpeed_mps = Math.PI * waveHeight_m / wavePeriod_s;
+  const avgSpeed_mps = avgSpeed_mpm / 60;
+  const requiredSpeed_mps = peakSpeed_mps + avgSpeed_mps;
+  const requiredSpeed_mpm = requiredSpeed_mps * 60;
+  return {
+    requiredSpeed_mps,
+    requiredSpeed_mpm
+  };
+}
   if (typeof Plotly === 'undefined') return;
 
   // custom color scales for the two contour plots
