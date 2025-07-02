@@ -325,6 +325,24 @@ function clearResults() {
   }
 }
 
+/**
+ * Calculate required peak AHC speed for given wave and winch conditions.
+ * @param {number} waveHeight_m  - Wave height in meters
+ * @param {number} wavePeriod_s  - Wave period in seconds
+ * @param {number} avgSpeed_mpm  - Average (offset) winch speed in m/min
+ * @returns {Object}             - { requiredSpeed_mps, requiredSpeed_mpm }
+ */
+function calculateRequiredAHCSpeed(waveHeight_m, wavePeriod_s, avgSpeed_mpm) {
+  const peakSpeed_mps = Math.PI * waveHeight_m / wavePeriod_s;
+  const avgSpeed_mps = avgSpeed_mpm / 60;
+  const requiredSpeed_mps = peakSpeed_mps + avgSpeed_mps;
+  const requiredSpeed_mpm = requiredSpeed_mps * 60;
+  return {
+    requiredSpeed_mps,
+    requiredSpeed_mpm
+  };
+}
+
 function displayResults(results, inputs) {
   clearResults();
   if (!results || !results.combined.length) return;
@@ -563,25 +581,7 @@ function linspace(start, end, count) {
   }
   return result;
 }
-function plotAhcPerformance(reqSpeed, availSpeeds) {
 
-/**
- * Calculate required peak AHC speed for given wave and winch conditions.
- * @param {number} waveHeight_m  - Wave height in meters
- * @param {number} wavePeriod_s  - Wave period in seconds
- * @param {number} avgSpeed_mpm  - Average (offset) winch speed in m/min
- * @returns {Object}             - { requiredSpeed_mps, requiredSpeed_mpm }
- */
-function calculateRequiredAHCSpeed(waveHeight_m, wavePeriod_s, avgSpeed_mpm) {
-  const peakSpeed_mps = Math.PI * waveHeight_m / wavePeriod_s;
-  const avgSpeed_mps = avgSpeed_mpm / 60;
-  const requiredSpeed_mps = peakSpeed_mps + avgSpeed_mps;
-  const requiredSpeed_mpm = requiredSpeed_mps * 60;
-  return {
-    requiredSpeed_mps,
-    requiredSpeed_mpm
-  };
-}
   if (typeof Plotly === 'undefined') return;
 
   // custom color scales for the two contour plots
