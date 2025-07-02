@@ -859,8 +859,6 @@ function calculateDrumLayers(inputs) {
       }
 
       const circumference = nextRadius.multiply(2 * Math.PI);
-      baseWraps,
-      usedCalc: !validWrap,
       let capacity = circumference.to('m').multiply(wrapsEff);
       if (math.larger(capacity, remaining)) {
         capacity = remaining;
@@ -894,6 +892,8 @@ function calculateDrumLayers(inputs) {
       fullDrumDiameter_in: fullDrumDia.to('inch').toNumber(),
       reqFreeFlange_in: reqFreeFlange.to('inch').toNumber(),
       actualFreeFlangeBare_in: actualFreeFlangeBare.to('inch').toNumber(),
+      baseWraps,
+      usedCalc: !validWrap,
       layers
     };
     console.log('calculateDrumLayers result', result)
