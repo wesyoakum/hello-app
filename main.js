@@ -820,9 +820,9 @@ function calculateDrumLayers(inputs) {
     const bareDrumDia = bareDrumRadius.multiply(2);
     const actualFreeFlangeBare = math.subtract(flangeRadius, bareDrumRadius);
 
-    const calcWraps =
-      Math.floor(math.divide(flangeToFlange.multiply(2), cableDia).toNumber()) /
-      2;
+    const ffIn = flangeToFlange.toNumber('inch');
+    const diaIn = cableDia.toNumber('inch');
+    const calcWraps = Math.floor((ffIn * 2) / diaIn) / 2;
 
     const entered = inputs.sel_drum_wraps_per_layer;
     const validWrap =
