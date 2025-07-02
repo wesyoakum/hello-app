@@ -554,6 +554,9 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
   const vSpeeds = linspace(0, 2.5, 300);
   const z1 = vSpeeds.map(v => wavePeriods1.map(T => v * T / Math.PI));
 
+  const levelsH = [];
+  for (let h = 0; h <= 8; h += 0.5) levelsH.push(h);
+
   const data1 = [
     {
       x: wavePeriods1,
@@ -561,7 +564,16 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
       z: z1,
       type: 'contour',
       colorscale: 'Viridis',
-      contours: { coloring: 'heatmap' }
+      contours: {
+        coloring: 'heatmap',
+        start: 0,
+        end: 8,
+        size: 0.5
+      },
+      colorbar: {
+        title: 'Vertical Displacement (m)',
+        tickvals: levelsH
+      }
     }
   ];
 
@@ -575,7 +587,8 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
       line: { color: '#fff', width: 2 }
     }
   ];
-  availSpeeds.forEach(s => {
+  const annotations1 = [];
+  availSpeeds.forEach((s, idx) => {
     shapes1.push({
       type: 'line',
       x0: 8,
@@ -584,13 +597,34 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
       y1: s,
       line: { color: '#fff', width: 1, dash: 'dash' }
     });
+    annotations1.push({
+      x: 11.9,
+      y: s,
+      text: `------- Layer ${idx + 1} -------`,
+      showarrow: false,
+      xanchor: 'right',
+      font: {color: '#fff', size: 8}
+    });
   });
 
   const layout1 = {
     title: 'Plot 1',
-    xaxis: { title: 'Wave Period (s)', range: [8, 12] },
-    yaxis: { title: 'Maximum Vertical Speed (m/s)', range: [0, 2.5] },
+    xaxis: {
+      title: 'Wave Period (s)',
+      range: [8, 12],
+      showgrid: true,
+      gridcolor: 'rgba(0,0,0,0.2)',
+      gridwidth: 1
+    },
+    yaxis: {
+      title: 'Maximum Vertical Speed (m/s)',
+      range: [0, 2.5],
+      showgrid: true,
+      gridcolor: 'rgba(0,0,0,0.2)',
+      gridwidth: 1
+    },
     shapes: shapes1,
+    annotations: annotations1,
     width: document.getElementById('ahcPlot1').clientWidth,
     height: Math.min(550, document.getElementById('ahcPlot1').clientWidth * 0.75)
   };
@@ -601,6 +635,9 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
   const wavePeriods2 = linspace(4, 16, 300);
   const z2 = waveHeights.map(h => wavePeriods2.map(T => Math.PI * h / T));
 
+  const levelsV = [];
+  for (let v = 0; v <= 4; v += 0.5) levelsV.push(v);
+
   const data2 = [
     {
       x: wavePeriods2,
@@ -608,7 +645,8 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
       z: z2,
       type: 'contour',
       colorscale: 'Viridis',
-      contours: { coloring: 'heatmap' }
+      contours: { coloring: 'heatmap', start: 0, end: 4, size: 0.5 },
+      colorbar: { title: 'Maximum Vertical Speed (m/s)', tickvals: levelsV }
     },
     {
       x: wavePeriods2,
@@ -621,6 +659,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
     }
   ];
 
+  const annotations2 = [];
   availSpeeds.forEach((s, i) => {
     data2.push({
       x: wavePeriods2,
@@ -632,12 +671,33 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
       line: { color: '#fff', width: 1, dash: 'dash' },
       name: `Layer ${i + 1}`
     });
+    annotations2.push({
+      x: 15.8,
+      y: (s * 15.8) / Math.PI,
+      text: `Layer ${i + 1}`,
+      showarrow: false,
+      xanchor: 'left',
+      font: {color: '#fff', size: 8}
+    });
   });
 
   const layout2 = {
     title: 'Plot 2',
-    xaxis: { title: 'Wave Period (s)', range: [4, 16] },
-    yaxis: { title: 'Vertical Displacement (m)', range: [0, 8] },
+    xaxis: {
+      title: 'Wave Period (s)',
+      range: [4, 16],
+      showgrid: true,
+      gridcolor: 'rgba(0,0,0,0.2)',
+      gridwidth: 1
+    },
+    yaxis: {
+      title: 'Vertical Displacement (m)',
+      range: [0, 8],
+      showgrid: true,
+      gridcolor: 'rgba(0,0,0,0.2)',
+      gridwidth: 1
+    },
+    annotations: annotations2,
     width: document.getElementById('ahcPlot2').clientWidth,
     height: Math.min(550, document.getElementById('ahcPlot2').clientWidth * 0.75)
   };
