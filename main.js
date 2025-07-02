@@ -631,6 +631,70 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
 
   Plotly.newPlot('ahcPlot1', data1, layout1, {displaylogo: false});
 
+  const waveHeights = linspace(0, 6, 300);
+  const wavePeriods2 = linspace(4, 16, 300);
+  const z2 = wavePeriods2.map(T => waveHeights.map(h => Math.PI * h / T));
+
+  const levelsV = [];
+  for (let v = 0; v <= 4; v += 0.5) levelsV.push(v);
+
+  const data2 = [
+    {
+      x: waveHeights,
+      y: wavePeriods2,
+      z: z2,
+      type: 'contour',
+      colorscale: 'Plasma',
+      contours: { coloring: 'heatmap', start: 0, end: 4, size: 0.5 },
+      colorbar: { title: 'Maximum Vertical Speed (m/s)', tickvals: levelsV }
+    },
+    {
+      x: waveHeights,
+      y: wavePeriods2,
+      z: z2,
+      type: 'contour',
+      contours: { start: reqSpeed, end: reqSpeed, size: 0 },
+      showscale: false,
+      line: { color: '#fff', width: 2 }
+    }
+  ];
+
+  const contourSpeeds = [0.5, 1.0, 1.5];
+  contourSpeeds.forEach(s => {
+    data2.push({
+      x: waveHeights,
+      y: wavePeriods2,
+      z: z2,
+      type: 'contour',
+      contours: { start: s, end: s, size: 0 },
+      showscale: false,
+      line: { color: '#fff', width: 1, dash: 'dash' },
+      hoverinfo: 'skip'
+    });
+  });
+
+  const layout2 = {
+    title: 'Plot 2',
+    xaxis: {
+      title: 'Wave Height (m)',
+      range: [0, 6],
+      showgrid: true,
+      gridcolor: 'rgba(0,0,0,0.2)',
+      gridwidth: 1
+    },
+    yaxis: {
+      title: 'Wave Period (s)',
+      range: [4, 16],
+      showgrid: true,
+      gridcolor: 'rgba(0,0,0,0.2)',
+      gridwidth: 1
+    },
+    width: document.getElementById('ahcPlot2').clientWidth,
+    height: Math.min(550, document.getElementById('ahcPlot2').clientWidth * 0.75)
+  };
+
+  Plotly.newPlot('ahcPlot2', data2, layout2, {displaylogo: false});
+}
 
 function tryCalculateAndDisplay() {
   const inputs = readInputs();
