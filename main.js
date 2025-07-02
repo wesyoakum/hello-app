@@ -352,7 +352,7 @@ function displayResults(results, inputs) {
     `Bare Drum Diameter: ${results.bareDrumDiameter_in.toFixed(2)} in<br>` +
     `Full Drum Diameter: ${results.fullDrumDiameter_in.toFixed(2)} in<br>` +
     `Required Free Flange: ${results.reqFreeFlange_in.toFixed(2)} in<br>` +
-    `Actual Free Flange Bare: ${results.actualFreeFlangeBare_in.toFixed(2)} in`;
+    `Free Flange: ${results.freeFlange_in.toFixed(2)} in`;
 
   const tbody = document.querySelector('#resultsTable tbody');
   results.combined.forEach(r => {
@@ -939,7 +939,6 @@ function calculateDrumLayers(inputs) {
       lebusThickness
     );
     const bareDrumDia = bareDrumRadius.multiply(2);
-    const actualFreeFlangeBare = math.subtract(flangeRadius, bareDrumRadius);
 
     const ffIn = flangeToFlange.toNumber('inch');
     const diaIn = cableDia.toNumber('inch');
@@ -1007,12 +1006,14 @@ function calculateDrumLayers(inputs) {
 
     const fullDrumDia = currentRadius.multiply(2);
 
+    const finalFreeFlange = math.subtract(flangeRadius, currentRadius);
+
     const result = {
       numLayers: layers.length,
       bareDrumDiameter_in: bareDrumDia.to('inch').toNumber(),
       fullDrumDiameter_in: fullDrumDia.to('inch').toNumber(),
       reqFreeFlange_in: reqFreeFlange.to('inch').toNumber(),
-      actualFreeFlangeBare_in: actualFreeFlangeBare.to('inch').toNumber(),
+      freeFlange_in: finalFreeFlange.to('inch').toNumber(),
       baseWraps,
       usedCalc: !validWrap,
       layers
