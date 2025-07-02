@@ -572,7 +572,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
       x1: 12,
       y0: reqSpeed,
       y1: reqSpeed,
-      line: { color: 'white', width: 2 }
+      line: { color: '#fff', width: 2 }
     }
   ];
   availSpeeds.forEach(s => {
@@ -582,7 +582,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
       x1: 12,
       y0: s,
       y1: s,
-      line: { color: 'white', width: 1, dash: 'dash' }
+      line: { color: '#fff', width: 1, dash: 'dash' }
     });
   });
 
@@ -592,7 +592,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
     yaxis: { title: 'Maximum Vertical Speed (m/s)', range: [0, 2.5] },
     shapes: shapes1,
     width: document.getElementById('ahcPlot1').clientWidth,
-    height: 1000
+    height: Math.min(550, document.getElementById('ahcPlot1').clientWidth * 0.75)
   };
 
   Plotly.newPlot('ahcPlot1', data1, layout1, {displaylogo: false});
@@ -617,7 +617,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
       type: 'contour',
       contours: { start: reqSpeed, end: reqSpeed, size: 0 },
       showscale: false,
-      line: { color: 'white', width: 2 }
+      line: { color: '#fff', width: 2 }
     }
   ];
 
@@ -629,7 +629,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
       type: 'contour',
       contours: { start: s, end: s, size: 0 },
       showscale: false,
-      line: { color: 'white', width: 1, dash: 'dash' },
+      line: { color: '#fff', width: 1, dash: 'dash' },
       name: `Layer ${i + 1}`
     });
   });
@@ -639,7 +639,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
     xaxis: { title: 'Wave Period (s)', range: [4, 16] },
     yaxis: { title: 'Vertical Displacement (m)', range: [0, 8] },
     width: document.getElementById('ahcPlot2').clientWidth,
-    height: 1000
+    height: Math.min(550, document.getElementById('ahcPlot2').clientWidth * 0.75)
   };
 
   Plotly.newPlot('ahcPlot2', data2, layout2, {displaylogo: false});
