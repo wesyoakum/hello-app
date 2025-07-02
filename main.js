@@ -389,9 +389,9 @@ function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powe
     data: {
       labels: depths,
       datasets: [
-        { label: 'Tension (kgf)', data: tension, borderColor: 'blue', fill: false },
-        { label: 'Available Tension (kgf)', data: availTension, borderColor: 'red', fill: false },
-        { label: 'SWL', data: depths.map(() => swl), borderColor: 'gray', borderDash: [5,5], fill: false, pointRadius: 0 }
+        { label: 'Tension (kgf)', data: tension, borderColor: '#6d4688', fill: false },
+        { label: 'Available Tension (kgf)', data: availTension, borderColor: '#4cb3a0', fill: false },
+        { label: 'SWL', data: depths.map(() => swl), borderColor: '#dfe747', borderDash: [5,5], fill: false, pointRadius: 0 }
       ]
     },
     options: {
@@ -408,10 +408,10 @@ function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powe
     data: {
       labels: depths,
       datasets: [
-        { label: 'Available Speed (m/min)', data: actualSpeed, borderColor: '#68669e', fill: false },
+        { label: 'Available Speed (m/min)', data: actualSpeed, borderColor: '#6d4688', fill: false },
         { label: 'RPM Limited Speed (m/min)', data: rpmSpeed, borderColor: '#519ba4', fill: false },
         { label: 'Power Limited Speed (m/min)', data: powerSpeed, borderColor: '#65c98f', fill: false },
-        { label: 'Required Speed', data: depths.map(() => reqSpeed), borderColor: 'gray', borderDash: [5,5], fill: false, pointRadius: 0 }
+        { label: 'Required Speed', data: depths.map(() => reqSpeed), borderColor: '#dfe747', borderDash: [5,5], fill: false, pointRadius: 0 }
       ]
     },
     options: {
