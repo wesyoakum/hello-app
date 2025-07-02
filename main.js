@@ -582,6 +582,7 @@ function linspace(start, end, count) {
   return result;
 }
 
+function plotAhcPerformance(reqSpeed, availSpeeds) {
   if (typeof Plotly === 'undefined') return;
 
   // custom color scales for the two contour plots
