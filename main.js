@@ -525,9 +525,6 @@ function drawDrumVisualization(layers, inputs, baseWraps) {
     const spacingWhole = (flangeSpacing - cableDia) / (baseWraps - 1);
     const spacingHalf = (flangeSpacing - cableDia / 2) / (baseWraps - 0.5);
 
-    let x = flangeThickness + cableDia / 2;
-    let direction = 1; // 1 -> left to right, -1 -> right to left
-
     for (let row = 0; row < layers.length && remaining > 0; row++) {
       const wraps = isHalf
         ? baseInt
@@ -543,8 +540,21 @@ function drawDrumVisualization(layers, inputs, baseWraps) {
       const yBottom = centerY - offset;
       const circumference = 2 * Math.PI * offset * 0.0254;
 
+      let startX, step;
+      if (row % 2 === 0) {
+        startX = flangeThickness + cableDia / 2;
+        step = spacing;
+      } else {
+        startX =
+          flangeThickness +
+          flangeSpacing -
+          cableDia / 2 -
+          (isHalf ? 0 : spacing / 2);
+        step = -spacing;
+      }
 
       for (let i = 0; i < wraps && remaining > 0; i++) {
+        const x = startX + step * i;
         const px = toX(x);
         const r = (cableDia / 2) * scale;
         drumCtx.beginPath();
@@ -553,17 +563,8 @@ function drawDrumVisualization(layers, inputs, baseWraps) {
         drumCtx.beginPath();
         drumCtx.arc(px, toY(yBottom), r, 0, Math.PI * 2);
         drumCtx.stroke();
-
+        
         remaining -= circumference;
-        x += direction * spacing;
-      }
-
-      if (remaining > 0) {
-        // shift to next layer start position
-        direction *= -1;
-        if (!isHalf) {
-          x += direction * spacing / 2;
-        }
       }
     }
 
