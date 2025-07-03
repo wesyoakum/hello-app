@@ -34,7 +34,11 @@
             <input type="file" id="configImportInput" style="display:none">
             <button id="configImport">Import</button>
           </div>
-    
+        
+        <label>Winch Model
+          <input type="text" id="winch_model" placeholder="Dynacon 1103" required>
+        </label>
+        
           <form id="inputForm">
         <label>Winch Type
           <select id="winch_type" required>
@@ -42,10 +46,7 @@
             <option value="hydraulic">Hydraulic</option>
           </select>
         </label>
-    
-        <label>Winch Model
-          <input type="text" id="winch_model" placeholder="Dynacon 1103" required>
-        </label>
+
     
         <label>Safe Working Load (kgf)
           <input type="number" step="any" id="req_swl" placeholder="9500" required>
@@ -58,6 +59,10 @@
         <label>Wave Height (m)
           <input type="number" step="any" id="wave_height" placeholder="2" required>
         </label>
+        
+        <label>Wave Height (m)
+          <input type="number" step="any" id="wave_height" placeholder="2" required>
+        </label>        
 
         <label>Wave Period (s)
           <input type="number" step="any" id="wave_period" placeholder="10" required>

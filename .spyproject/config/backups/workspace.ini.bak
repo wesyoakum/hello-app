@@ -4,7 +4,7 @@ save_data_on_exit = True
 save_history = True
 save_non_project_files = False
 project_type = 'empty-project-type'
-recent_files = ['main.js', 'index.html', 'styles.css']
+recent_files = ['main.js', 'styles.css', 'index.html', '..\\..\\..\\Universal Winch Calculator 250617\\winch_tools\\AHC_performance.py', '..\\..\\..\\Universal Winch Calculator 250617\\testahcjs.html']
 
 [main]
 version = 0.2.0
