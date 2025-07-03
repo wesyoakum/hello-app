@@ -623,7 +623,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
     cmax: 8,    contours: {
       start: 0,
       end: 8,
-      size: 0.5,
+      size: 1,
       coloring: 'heatmap',
       showlines: true,
       color: 'white'
