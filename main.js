@@ -40,6 +40,7 @@ const DEFAULT_CONFIGS = {
   }
 };
 
+
 let tensionChart = null;
 let speedChart = null;
 let drumCtx = null;
