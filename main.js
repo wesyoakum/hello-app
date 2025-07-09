@@ -71,6 +71,8 @@ function calculateWinchPerformance(inputs, layers) {
 
     const cableWeight = inputs.sel_umb_weight; // kgf per m
     const payload = inputs.sel_payload_weight; // kgf
+        const cableLength = inputs.sel_cable_length || 0; // total length of cable
+
 
     const g = 9.80665; // N per kgf
 
@@ -83,7 +85,8 @@ function calculateWinchPerformance(inputs, layers) {
 
       layers.forEach(l => {
         const radius = toMeters(l.diameter_in) / 2;
-        const diameter = toMeters(l.diameter_in);
+        const depth = cableLength - l.cumulative_capacity_m;
+        const tensionN = (payload + cableWeight * depth) * g;
         const tensionN = (payload + cableWeight * l.cumulative_capacity_m) * g;
 
         const availTen = torque / radius / g; // kgf
@@ -118,7 +121,8 @@ function calculateWinchPerformance(inputs, layers) {
 
       layers.forEach(l => {
         const radius = toMeters(l.diameter_in) / 2;
-        const diameter = toMeters(l.diameter_in);
+        const depth = cableLength - l.cumulative_capacity_m;
+        const tensionN = (payload + cableWeight * depth) * g;
         const tensionN = (payload + cableWeight * l.cumulative_capacity_m) * g;
 
         const availTen = totalTrq / radius / g; // kgf
