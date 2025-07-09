@@ -37,7 +37,7 @@ const DEFAULT_CONFIGS = {
     sel_hyd_num_pumps: 2,
     sel_hyd_pump_displacement: 210,
     sel_hyd_charge_pressure: 300
-  }
+  },
     "Fugro Arjo": {
       winch_type: "hydraulic",
       winch_model: "TBD",
