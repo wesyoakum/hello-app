@@ -39,12 +39,15 @@
             </div>
           </div>
         </div>
+        
         <h2>General Requirements</h2>
+        
         <label>Winch Model
           <input type="text" id="winch_model" placeholder="Dynacon 1103" required>
         </label>
         
-          <form id="inputForm">
+        <form id="inputForm">
+        
         <label>Winch Type
           <select id="winch_type" required>
             <option value="electric">Electric</option>
@@ -109,6 +112,8 @@
         </label>
         <div id="wraps_note" class="field-note"></div>
         
+        <h2>Weights</h2>
+                
         <label>Payload Weight in Water (kgf)
           <input type="number" step="any" id="sel_payload_weight" placeholder="1537" required>
         </label>
@@ -127,7 +132,7 @@
           <input type="number" step="any" id="sel_motor_eff" name="sel_motor_eff" placeholder="0.96" required>
         </label>
         
-        <h2>Design Selections</h2>
+        <h2>General Selections</h2>
         
         <label>Pinion Gear Ratio
           <input type="number" step="any" id="sel_pinion_ratio" placeholder="5.24" required>
@@ -140,22 +145,8 @@
         <label>Number of Drive Motors
           <input type="number" step="any" id="sel_motor_count" placeholder="6" required>
         </label>
-
-        <label>Motor Power (W)
-          <input type="number" step="any" id="sel_motor_power" placeholder="44000" required>
-        </label>
-
-        <label>Motor Torque (N·m)
-          <input type="number" step="any" id="sel_motor_torque" placeholder="192" required>
-        </label>
-
-        <label>Motor RPM
-          <input type="number" step="any" id="sel_motor_rpm" placeholder="2200" required>
-        </label>
         
-        <label>Electric Motor Power (hp)
-          <input type="number" step="any" id="sel_elec_motor_power" placeholder="50">
-        </label>
+        <h2>Hydraulic</h2>
 
         <label class="hydraulic-only">Max Operating PSI
           <input type="number" step="any" id="sel_hyd_system_psi_max" placeholder="4000">
@@ -183,7 +174,26 @@
         <label class="hydraulic-only">Charge Pressure (psi)
           <input type="number" step="any" id="sel_hyd_charge_pressure" placeholder="300" required>
         </label>
-            </form>
+        
+        <h2>Electric</h2>
+
+        <label>Motor Power (W)
+          <input type="number" step="any" id="sel_motor_power" placeholder="44000" required>
+        </label>
+
+        <label>Motor Torque (N·m)
+          <input type="number" step="any" id="sel_motor_torque" placeholder="192" required>
+        </label>
+
+        <label>Motor RPM
+          <input type="number" step="any" id="sel_motor_rpm" placeholder="2200" required>
+        </label>
+        
+        <label>Electric Motor Power (hp)
+          <input type="number" step="any" id="sel_elec_motor_power" placeholder="50">
+        </label>
+        
+        </form>
         </div>
         
         <div class="main">
