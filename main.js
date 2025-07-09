@@ -71,7 +71,7 @@ const DEFAULT_CONFIGS = {
       sel_hyd_num_pumps: 2,
       sel_hyd_pump_displacement: 210,
       sel_hyd_charge_pressure: 300
-    }
+   }
 };
 
 
@@ -406,7 +406,8 @@ function displayResults(results, inputs) {
       `<td>${r.diameter_in.toFixed(2)}</td>` +
       `<td>${r.layer_capacity_m.toFixed(2)}</td>` +
       `<td>${r.cumulative_capacity_m.toFixed(2)}</td>` +
-      `<td>${r.depth_m.toFixed(2)}</td>` +
+      `<td>${r.depth_m.toFixed(2)}</td>` +      
+      `<td>${r.remaining_m.toFixed(2)}</td>` +
       `<td>${r.tension_kgf.toFixed(1)}</td>` +
       `<td>${r.available_tension_kgf.toFixed(1)}</td>` +
       `<td>${r.actual_speed_mpm.toFixed(2)}</td>` +
