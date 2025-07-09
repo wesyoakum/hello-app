@@ -975,6 +975,7 @@ function calculateDrumLayers(inputs) {
     const coreDia = u(inputs.sel_drum_core_dia, 'inch');
     const lebusThickness = u(inputs.sel_drum_lebus_thickness, 'inch');
     const cableLength = u(inputs.sel_cable_length, 'm');
+    const availableLength = math.subtract(cableLength, u(300, 'm'));
 
     const reqFreeFlange = cableDia.multiply(2.5);
     const flangeRadius = flangeDia.divide(2);
@@ -1007,7 +1008,7 @@ function calculateDrumLayers(inputs) {
     const radInc = cableDia.multiply(PACKING_FACTOR);
     const layers = [];
     let currentRadius = bareDrumRadius;
-    let remaining = cableLength;
+    let remaining = availableLength;
     let cumulative = u(0, 'm');
     let idx = 0;
 
@@ -1016,6 +1017,8 @@ function calculateDrumLayers(inputs) {
       const wrapsDraw = drawPattern[idx % drawPattern.length];
       const nextRadius = math.add(currentRadius, radInc);
       const freeFlange = math.subtract(flangeRadius, nextRadius); // compute free flange immediately
+
+      const depthBefore = availableLength.toNumber('m') - cumulative.toNumber('m');
 
       const circumference = nextRadius.multiply(2 * Math.PI);
       let capacity = circumference.to('m').multiply(wrapsEff);
@@ -1033,8 +1036,8 @@ function calculateDrumLayers(inputs) {
         layer_capacity_m: capacity.toNumber('m'),
         cumulative_capacity_m: cumulative.toNumber('m'),
         free_flange_in: freeFlange.to('inch').toNumber(),
-        depth_m: cableLength.toNumber('m') - cumulative.toNumber('m'),
-        remaining_m: remaining.toNumber('m')             
+        depth_m: depthBefore,
+        remaining_m: remaining.toNumber('m')       
       });
 
       currentRadius = nextRadius; // update radius only after accepting the layer
