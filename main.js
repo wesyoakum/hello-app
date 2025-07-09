@@ -475,7 +475,7 @@ function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powe
     options: {
       scales: {
         x: { title: { display: true, text: 'Depth (m)' } },
-        y: { title: { display: true, text: 'kgf' } }
+        y: { title: { display: true, text: 'kgf' }, min: 0 }
       }
     }
   });
@@ -495,7 +495,7 @@ function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powe
     options: {
       scales: {
         x: { title: { display: true, text: 'Depth (m)' } },
-        y: { title: { display: true, text: 'Speed (m/min)' } }
+        y: { title: { display: true, text: 'Speed (m/min)' }, min: 0 }
       }
     }
   });
@@ -664,7 +664,8 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
     type: 'contour',
     colorscale: colorscale1,
     cmin: 0,
-    cmax: 8,    contours: {
+    cmax: 8,    
+    contours: {
       start: 0,
       end: 8,
       size: 0.5,
