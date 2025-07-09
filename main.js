@@ -331,7 +331,7 @@ function populateConfigSelect() {
     select.appendChild(opt);
   });
   if (select.options.length === 0) {
-    const def = 'Default';
+    const def = 'Fugro Arjo';
     configs[def] = {};
     saveConfigs(configs);
     const opt = document.createElement('option');
