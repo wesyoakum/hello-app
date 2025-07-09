@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Winch Input Form</title>
+  <title>Winch Analyzer</title>
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
@@ -19,8 +19,8 @@
   <link rel="stylesheet" href="styles.css">
   </head>
 <body>
-  <h1>General Requirements</h1>
-      <h2>Winch Configuration Input</h2>
+  <h1>Configurator</h1>
+      <h2>Configurations</h2>
       <div class="layout">
         <div class="sidebar">
           <h3>Configurations</h3>
@@ -34,6 +34,11 @@
             <input type="file" id="configImportInput" style="display:none">
             <button id="configImport">Import</button>
           </div>
+        </div>
+      </div>
+      <h2>General Requirements</h2>
+      <div class="layout">
+        <div class="sidebar">     
         
         <label>Winch Model
           <input type="text" id="winch_model" placeholder="Dynacon 1103" required>
@@ -46,8 +51,7 @@
             <option value="hydraulic">Hydraulic</option>
           </select>
         </label>
-
-    
+        
         <label>Safe Working Load (kgf)
           <input type="number" step="any" id="req_swl" placeholder="9500" required>
         </label>
@@ -55,7 +59,15 @@
         <label>Required Line Speed (m/min)
           <input type="number" step="any" id="req_speed" placeholder="30" required>
         </label>
-        
+    
+        <label>Cable Diameter (mm)
+          <input type="number" step="any" id="sel_umb_dia" placeholder="28.5" required>
+        </label>
+    
+        <label>Cable Length (m)
+          <input type="number" step="any" id="sel_cable_length" placeholder="4400" required>
+              </label>
+                    <h2>Active Heave Comp</h2>
         <label>Wave Height (m)
           <input type="number" step="any" id="wave_height" placeholder="2" required>
         </label>
@@ -71,18 +83,8 @@
         <label>Average Winch Offset Speed (m/min)
           <input type="number" step="any" id="avg_offset_speed" placeholder="0" value="0" required>
         </label>
-    
-        <label>Cable Diameter (mm)
-          <input type="number" step="any" id="sel_umb_dia" placeholder="28.5" required>
-        </label>
-    
-        <label>Cable Length (m)
-          <input type="number" step="any" id="sel_cable_length" placeholder="4400" required>
-              </label>
 
-    <label>Payload Weight in Water (kgf)
-      <input type="number" step="any" id="sel_payload_weight" placeholder="1537" required>
-    </label>
+
 
     <label>Electric Motor Power (hp)
       <input type="number" step="any" id="sel_elec_motor_power" placeholder="50">
@@ -95,6 +97,7 @@
       <label class="hydraulic-only">Hydra-Mech Efficiency (0–1)
         <input type="number" step="any" id="sel_hyd_mech_efficiency" placeholder="0.85" required>
       </label>
+      <h2>Drum Dimensions</h2>
 
       <label>Drum Core Diameter (in)
         <input type="number" step="any" id="sel_drum_core_dia" placeholder="70" required>
@@ -118,10 +121,19 @@
             <div id="wraps_note" class="field-note"></div>
 
 
+    <label>Payload Weight in Water (kgf)
+      <input type="number" step="any" id="sel_payload_weight" placeholder="1537" required>
+    </label>
       <label>Cable Weight in Water (kgf/m)
         <input type="number" step="any" id="sel_umb_weight" placeholder="2" required>
       </label>
+            <h2>Standard Assumptions</h2>
 
+            <label>Electro-Mechanical Efficiency
+              <input type="number" step="any" id="sel_motor_eff" name="sel_motor_eff" placeholder="0.96" required>
+          
+                </label>
+      <h2>Design Selections</h2>
       <label>Pinion Gear Ratio
         <input type="number" step="any" id="sel_pinion_ratio" placeholder="5.24" required>
       </label>
@@ -146,12 +158,8 @@
         <input type="number" step="any" id="sel_motor_rpm" placeholder="2200" required>
       </label>
 
-      <label>Electro-Mechanical Efficiency
-        <input type="number" step="any" id="sel_motor_eff" name="sel_motor_eff" placeholder="0.96" required>
-    
-          </label>
+
           
-      <h1>Selected Specs</h1>
 
           <label class="hydraulic-only">Hydraulic Motor Displacement (cc)
             <input type="number" step="any" id="sel_hyd_motor_displacement" placeholder="105" required>
