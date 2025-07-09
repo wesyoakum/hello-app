@@ -71,8 +71,7 @@ function calculateWinchPerformance(inputs, layers) {
 
     const cableWeight = inputs.sel_umb_weight; // kgf per m
     const payload = inputs.sel_payload_weight; // kgf
-        const cableLength = inputs.sel_cable_length || 0; // total length of cable
-
+    const cableLength = inputs.sel_cable_length || 0; // total length of cable
 
     const g = 9.80665; // N per kgf
 
@@ -85,9 +84,11 @@ function calculateWinchPerformance(inputs, layers) {
 
       layers.forEach(l => {
         const radius = toMeters(l.diameter_in) / 2;
-        const depth = cableLength - l.cumulative_capacity_m;
+        const diameter = toMeters(l.diameter_in);
+        const depth = (typeof l.depth_m === 'number')
+          ? l.depth_m
+          : cableLength - l.cumulative_capacity_m;
         const tensionN = (payload + cableWeight * depth) * g;
-        const tensionN = (payload + cableWeight * l.cumulative_capacity_m) * g;
 
         const availTen = torque / radius / g; // kgf
         const rpmSpeed = rpm * diameter * Math.PI / totalGearRatio; // m/min
@@ -121,9 +122,11 @@ function calculateWinchPerformance(inputs, layers) {
 
       layers.forEach(l => {
         const radius = toMeters(l.diameter_in) / 2;
-        const depth = cableLength - l.cumulative_capacity_m;
+        const diameter = toMeters(l.diameter_in);
+        const depth = (typeof l.depth_m === 'number')
+          ? l.depth_m
+          : cableLength - l.cumulative_capacity_m;
         const tensionN = (payload + cableWeight * depth) * g;
-        const tensionN = (payload + cableWeight * l.cumulative_capacity_m) * g;
 
         const availTen = totalTrq / radius / g; // kgf
 
@@ -171,7 +174,9 @@ function combineResults(inputs, layers, perf) {
 
     return layers.map((l, idx) => {
       const p = perf[idx] || {};
-      const depth = cableLength - l.cumulative_capacity_m;
+      const depth = typeof l.depth_m === 'number'
+        ? l.depth_m
+        : cableLength - l.cumulative_capacity_m;
       const tension = depth * cableWeight + payload;
 
       let reqPress = null;
@@ -993,7 +998,8 @@ function calculateDrumLayers(inputs) {
         diameter_in: nextRadius.multiply(2).to('inch').toNumber(),
         layer_capacity_m: capacity.toNumber('m'),
         cumulative_capacity_m: cumulative.toNumber('m'),
-        free_flange_in: freeFlange.to('inch').toNumber()
+        free_flange_in: freeFlange.to('inch').toNumber(),
+        depth_m: cableLength.toNumber('m') - cumulative.toNumber('m')        
       });
 
       currentRadius = nextRadius; // update radius only after accepting the layer
