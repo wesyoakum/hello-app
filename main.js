@@ -38,6 +38,40 @@ const DEFAULT_CONFIGS = {
     sel_hyd_pump_displacement: 210,
     sel_hyd_charge_pressure: 300
   }
+    "Fugro Arjo": {
+      winch_type: "hydraulic",
+      winch_model: "TBD",
+      req_swl: 1000,
+      req_speed: 63,
+      wave_height: 3.5,
+      wave_period: 20,
+      avg_offset_speed: 30,
+      sel_umb_dia: 30,
+      sel_cable_length: 3500,
+      sel_umb_weight: 3.8,
+      sel_drum_core_dia: 64,
+      sel_drum_lebus_thickness: 0.625,
+      sel_drum_flange_dia: 100,
+      sel_drum_flange_to_flange: 116,
+      sel_drum_wraps_per_layer: 0,
+      sel_payload_weight: 12000,
+      sel_elec_motor_power: 150,
+      sel_hyd_system_psi_max: 4000,
+      sel_hyd_mech_efficiency: 0.85,
+      sel_pinion_ratio: 4.84,
+      sel_gearbox_ratio: 19,
+      sel_motor_count: 6,
+      sel_motor_power: 44000,
+      sel_motor_torque: 192,
+      sel_motor_rpm: 1780,
+      sel_motor_eff: 0.96,
+      sel_hyd_motor_displacement: 105,
+      sel_hyd_motor_max_rpm: 3700,
+      sel_elec_motor_rpm: 1780,
+      sel_hyd_num_pumps: 2,
+      sel_hyd_pump_displacement: 210,
+      sel_hyd_charge_pressure: 300
+    }
 };
 
 
@@ -999,7 +1033,8 @@ function calculateDrumLayers(inputs) {
         layer_capacity_m: capacity.toNumber('m'),
         cumulative_capacity_m: cumulative.toNumber('m'),
         free_flange_in: freeFlange.to('inch').toNumber(),
-        depth_m: cableLength.toNumber('m') - cumulative.toNumber('m')        
+        depth_m: cableLength.toNumber('m') - cumulative.toNumber('m'),
+        remaining_m: remaining.toNumber('m')             
       });
 
       currentRadius = nextRadius; // update radius only after accepting the layer
