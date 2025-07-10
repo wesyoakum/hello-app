@@ -631,7 +631,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
 
   // custom color scales for the two contour plots
   const colorscale1 = [
-    [0 / 8, '#6d4688'], [1 / 8, '#6d4688'],
+    [1 / 8, '#6d4688'],
     [1 / 8, '#68669e'], [2 / 8, '#68669e'],
     [2 / 8, '#5c82a4'], [3 / 8, '#5c82a4'],
     [3 / 8, '#519ba4'], [4 / 8, '#519ba4'],
@@ -668,7 +668,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
     contours: {
       start: 0,
       end: 8,
-      size: 0.5,
+      size: 1,
       coloring: 'heatmap',
       showlines: true,
       color: 'white'
