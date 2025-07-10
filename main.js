@@ -625,11 +625,10 @@ function linspace(start, end, count) {
   }
   return result;
 }
-
 function plotAhcPerformance(reqSpeed, availSpeeds) {
   if (typeof Plotly === 'undefined') return;
 
-  // custom color scales for the two contour plots
+  // Custom color scales for the two plots
   const colorscale1 = [
     [0 / 8, '#6d4688'], [1 / 8, '#6d4688'],
     [1 / 8, '#68669e'], [2 / 8, '#68669e'],
@@ -653,31 +652,44 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
     [1, '#ffffff']
   ];
 
+  // --- First Plot ---
   const wavePeriods1 = linspace(8, 12, 300);
   const vSpeeds = linspace(0, 2.5, 300);
   const z1 = vSpeeds.map(v => wavePeriods1.map(T => v * T / Math.PI));
 
-    const data1 = [{
+  // Heatmap for color fill
+  const heatmap1 = {
+    x: wavePeriods1,
+    y: vSpeeds,
+    z: z1,
+    type: 'heatmap',
+    colorscale: colorscale1,
+    zmin: 0,
+    zmax: 8,
+    colorbar: { title: 'Vertical Displacement (m)' },
+    showscale: true,
+    hoverinfo: 'skip'
+  };
+
+  // Contour lines overlay (white lines only, no fill)
+  const contourLines1 = {
     x: wavePeriods1,
     y: vSpeeds,
     z: z1,
     type: 'contour',
-    colorscale: colorscale1,
-    cmin: 0,
-    cmax: 8,    
     contours: {
       start: 0,
       end: 8,
       size: 1,
-      coloring: 'heatmap',
-      showlines: true,
-      color: 'white'
+      coloring: 'lines',
+      showlines: true
     },
-    line: { color: 'white', width: 0.5 },
-    colorbar: { title: 'Vertical Displacement (m)' },
-    showscale: true
-  }];
+    line: { color: 'white', width: 1 },
+    showscale: false,
+    hoverinfo: 'skip'
+  };
 
+  // Overlay lines and labels
   const reqLine = {
     x: [8, 12],
     y: [reqSpeed, reqSpeed],
@@ -704,7 +716,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
 
   Plotly.newPlot(
     'ahcPlot1',
-    [data1[0], reqLine, ...availLines],
+    [heatmap1, contourLines1, reqLine, ...availLines],
     {
       title: 'Vertical Displacement vs Wave Period & Max Vertical Speed',
       xaxis: { title: 'Wave Period (s)', range: [8, 12], gridcolor: 'rgba(0,0,0,0.1)', color: '#111' },
@@ -718,32 +730,44 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
     { responsive: true }
   );
 
-
+  // --- Second Plot ---
   const waveHeights = linspace(0, 8, 300);
   const wavePeriods2 = linspace(4, 16, 300);
   const z2 = waveHeights.map(h => wavePeriods2.map(T => Math.PI * h / T));
 
-  const contour2 = {
+  // Heatmap for color fill
+  const heatmap2 = {
+    x: wavePeriods2,
+    y: waveHeights,
+    z: z2,
+    type: 'heatmap',
+    colorscale: colorscale2,
+    zmin: 0,
+    zmax: 4,
+    colorbar: { title: 'Maximum Vertical Speed (m/s)' },
+    showscale: true,
+    hoverinfo: 'skip'
+  };
+
+  // Contour lines overlay
+  const contourLines2 = {
     x: wavePeriods2,
     y: waveHeights,
     z: z2,
     type: 'contour',
-    colorscale: colorscale2,
-    cmin: 0,
-    cmax: 4,    
     contours: {
       start: 0,
       end: 4,
       size: 0.5,
-      coloring: 'heatmap',
-      showlines: true,
-      color: 'white'
+      coloring: 'lines',
+      showlines: true
     },
-    line: { color: 'white', width: 0.5 },
-    colorbar: { title: 'Maximum Vertical Speed (m/s)' },
-    showscale: true
+    line: { color: 'white', width: 1 },
+    showscale: false,
+    hoverinfo: 'skip'
   };
 
+  // Overlay lines and labels for plot 2
   const reqIsoX = [];
   const reqIsoY = [];
   wavePeriods2.forEach(T => {
@@ -796,7 +820,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
 
   Plotly.newPlot(
     'ahcPlot2',
-    [contour2, reqIso, ...availContours],
+    [heatmap2, contourLines2, reqIso, ...availContours],
     {
       title: 'Max Vertical Speed vs Wave Period & Vertical Displacement',
       xaxis: { title: 'Wave Period (s)', range: [4, 16], gridcolor: 'rgba(0,0,0,0.1)', color: '#111' },
@@ -810,6 +834,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
     { responsive: true }
   );
 }
+
 
 function tryCalculateAndDisplay() {
   const inputs = readInputs();
