@@ -671,25 +671,8 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
     hoverinfo: 'skip'
   };
 
-  // White contour lines overlay (no fill)
-  const contourLines1 = {
-    x: wavePeriods1,
-    y: vSpeeds,
-    z: z1,
-    type: 'contour',
-    contours: {
-      start: 0,
-      end: 8,
-      size: 1,
-      coloring: 'lines',
-      showlines: true
-    },
-    line: { color: 'white', width: 2 }, // THICK white lines!
-    showscale: false,
-    hoverinfo: 'skip'
-  };
 
-  // Overlay lines and labels
+   // Overlay lines and labels
   const reqLine = {
     x: [8, 12],
     y: [reqSpeed, reqSpeed],
@@ -716,7 +699,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
 
   Plotly.newPlot(
     'ahcPlot1',
-    [heatmap1, contourLines1, reqLine, ...availLines],
+    [heatmap1, reqLine, ...availLines],
     {
       title: 'Vertical Displacement vs Wave Period & Max Vertical Speed',
       xaxis: { title: 'Wave Period (s)', range: [8, 12], gridcolor: 'rgba(0,0,0,0.1)', color: '#111' },
@@ -749,23 +732,6 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
     hoverinfo: 'skip'
   };
 
-  // White contour lines overlay (no fill)
-  const contourLines2 = {
-    x: wavePeriods2,
-    y: waveHeights,
-    z: z2,
-    type: 'contour',
-    contours: {
-      start: 0,
-      end: 4,
-      size: 0.5,
-      coloring: 'lines',
-      showlines: true
-    },
-    line: { color: 'white', width: 2 }, // THICK white lines!
-    showscale: false,
-    hoverinfo: 'skip'
-  };
 
   // Overlay lines and labels for plot 2
   const reqIsoX = [];
@@ -820,7 +786,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
 
   Plotly.newPlot(
     'ahcPlot2',
-    [heatmap2, contourLines2, reqIso, ...availContours],
+    [heatmap2, reqIso, ...availContours],
     {
       title: 'Max Vertical Speed vs Wave Period & Vertical Displacement',
       xaxis: { title: 'Wave Period (s)', range: [4, 16], gridcolor: 'rgba(0,0,0,0.1)', color: '#111' },
