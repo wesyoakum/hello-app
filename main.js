@@ -92,7 +92,7 @@ function getConfigs() {
   }
 }
 
-function calculateWinchPerformance(inputs, layers) {
+function calculateWinchPerformance(inputs, wraps) {
   try {
     if (typeof math === 'undefined' || !math.unit) {
       throw new Error('math.js library is required for calculateWinchPerformance');
@@ -115,12 +115,12 @@ function calculateWinchPerformance(inputs, layers) {
       const power = inputs.sel_motor_power * inputs.sel_motor_count * (inputs.sel_motor_eff || 1); // W
       const rpm = inputs.sel_motor_rpm; // 1/min
 
-      layers.forEach(l => {
+      wraps.forEach(l => {
         const radius = toMeters(l.diameter_in) / 2;
         const diameter = toMeters(l.diameter_in);
         const depth = (typeof l.depth_m === 'number')
           ? l.depth_m
-          : cableLength - l.cumulative_capacity_m;
+          : cableLength - l.cumulative_length_m;
         const tensionN = (payload + cableWeight * depth) * g;
 
         const availTen = torque / radius / g; // kgf
@@ -130,6 +130,7 @@ function calculateWinchPerformance(inputs, layers) {
 
         perf.push({
           layer: l.layer,
+          wrap: l.wrap,
           available_tension_kgf: availTen,
           rpm_speed_mpm: rpmSpeed,
           power_speed_mpm: powerSpeed,
@@ -153,12 +154,12 @@ function calculateWinchPerformance(inputs, layers) {
       const totalTrq = availTrq * inputs.sel_motor_count * totalGearRatio;
       const qAvail = pumpDisp / 1e6 * elecRpm * pumps; // m^3 per min assuming cc -> m^3
 
-      layers.forEach(l => {
+      wraps.forEach(l => {
         const radius = toMeters(l.diameter_in) / 2;
         const diameter = toMeters(l.diameter_in);
         const depth = (typeof l.depth_m === 'number')
           ? l.depth_m
-          : cableLength - l.cumulative_capacity_m;
+          : cableLength - l.cumulative_length_m;
         const tensionN = (payload + cableWeight * depth) * g;
 
         const availTen = totalTrq / radius / g; // kgf
@@ -172,6 +173,7 @@ function calculateWinchPerformance(inputs, layers) {
 
         perf.push({
           layer: l.layer,
+          wrap: l.wrap,
           available_tension_kgf: availTen,
           rpm_speed_mpm: speedQ,
           power_speed_mpm: speedHp,
@@ -188,7 +190,7 @@ function calculateWinchPerformance(inputs, layers) {
   }
 }
 
-function combineResults(inputs, layers, perf) {
+function combineResults(inputs, wraps, perf) {
   try {
     if (typeof math === 'undefined' || !math.unit) {
       throw new Error('math.js library is required for combineResults');
@@ -205,11 +207,11 @@ function combineResults(inputs, layers, perf) {
     const psiToPa = 6894.75729;
     const g = 9.80665;
 
-    return layers.map((l, idx) => {
+    return wraps.map((l, idx) => {
       const p = perf[idx] || {};
       const depth = typeof l.depth_m === 'number'
         ? l.depth_m
-        : cableLength - l.cumulative_capacity_m;
+        : cableLength - l.cumulative_length_m;
       const tension = depth * cableWeight + payload;
 
       let reqPress = null;
@@ -224,9 +226,10 @@ function combineResults(inputs, layers, perf) {
 
       return {
         layer: l.layer,
+        wrap: l.wrap,
         diameter_in: l.diameter_in,
-        layer_capacity_m: l.layer_capacity_m,
-        cumulative_capacity_m: l.cumulative_capacity_m,
+        wrap_length_m: l.wrap_length_m,
+        cumulative_length_m: l.cumulative_length_m,
         depth_m: depth,
         tension_kgf: tension,
         available_tension_kgf: p.available_tension_kgf,
@@ -377,7 +380,7 @@ function clearResults() {
  */
 function calculateRequiredAHCSpeed(waveHeight_m, wavePeriod_s, avgSpeed_mpm) {
   const peakSpeed_mps = Math.PI * waveHeight_m / wavePeriod_s;
-  const avgSpeed_mps = avgSpeed_mpm / 60;
+    const avgSpeed_mps = avgSpeed_mpm / 60;
   const requiredSpeed_mps = peakSpeed_mps + avgSpeed_mps;
   const requiredSpeed_mpm = requiredSpeed_mps * 60;
   return {
@@ -402,9 +405,10 @@ function displayResults(results, inputs) {
     const row = document.createElement('tr');
     row.innerHTML =
       `<td>${r.layer}</td>` +
+      `<td>${r.wrap}</td>` +
       `<td>${r.diameter_in.toFixed(2)}</td>` +
-      `<td>${r.layer_capacity_m.toFixed(2)}</td>` +
-      `<td>${r.cumulative_capacity_m.toFixed(2)}</td>` +
+      `<td>${r.wrap_length_m.toFixed(2)}</td>` +
+      `<td>${r.cumulative_length_m.toFixed(2)}</td>` +
       `<td>${r.depth_m.toFixed(2)}</td>` +
       `<td>${r.tension_kgf.toFixed(1)}</td>` +
       `<td>${r.available_tension_kgf.toFixed(1)}</td>` +
@@ -809,8 +813,8 @@ function tryCalculateAndDisplay() {
   });
   if (valid) {
     const drum = calculateDrumLayers(inputs);
-    const perf = calculateWinchPerformance(inputs, drum.layers);
-    const combined = combineResults(inputs, drum.layers, perf);
+    const perf = calculateWinchPerformance(inputs, drum.wraps);
+    const combined = combineResults(inputs, drum.wraps, perf);
     displayResults({ ...drum, combined }, inputs);
   } else {
     clearResults();
@@ -998,6 +1002,7 @@ function calculateDrumLayers(inputs) {
       : wrapPattern.map(w => Math.round(w));
     const radInc = cableDia.multiply(PACKING_FACTOR);
     const layers = [];
+    const wraps = [];
     let currentRadius = bareDrumRadius;
     let remaining = availableLength;
     let cumulative = u(0, 'm');
@@ -1009,29 +1014,44 @@ function calculateDrumLayers(inputs) {
       const nextRadius = math.add(currentRadius, radInc);
       const freeFlange = math.subtract(flangeRadius, nextRadius); // compute free flange immediately
 
-      const depthBefore = availableLength.toNumber('m') - cumulative.toNumber('m');
+      const depthBeforeLayer = availableLength.toNumber('m') - cumulative.toNumber('m');
 
-      const circumference = nextRadius.multiply(2 * Math.PI);
-      let capacity = circumference.to('m').multiply(wrapsEff);
-      if (math.larger(capacity, remaining)) {
-        capacity = remaining;
+      const circumference = nextRadius.multiply(2 * Math.PI).to('m');
+
+      let layerCap = u(0, 'm');
+      for (let w = 1; w <= wrapsEff && remaining.toNumber('m') > 0; w++) {
+        let wrapLen = circumference;
+        if (math.larger(wrapLen, remaining)) {
+          wrapLen = remaining;
+        }
+
+        wraps.push({
+          layer: idx + 1,
+          wrap: w,
+          diameter_in: nextRadius.multiply(2).to('inch').toNumber(),
+          wrap_length_m: wrapLen.toNumber('m'),
+          cumulative_length_m: math.add(cumulative, wrapLen).toNumber('m'),
+          depth_m: availableLength.toNumber('m') - cumulative.toNumber('m')
+        });
+
+        cumulative = math.add(cumulative, wrapLen);
+        remaining = math.subtract(remaining, wrapLen);
+        layerCap = math.add(layerCap, wrapLen);
       }
-      cumulative = math.add(cumulative, capacity);
-      remaining = math.subtract(remaining, capacity);
 
       layers.push({
         layer: idx + 1,
         wrapsAvailable: wrapsDraw,
         wrapsEffective: wrapsEff,
         diameter_in: nextRadius.multiply(2).to('inch').toNumber(),
-        layer_capacity_m: capacity.toNumber('m'),
+        layer_capacity_m: layerCap.toNumber('m'),
         cumulative_capacity_m: cumulative.toNumber('m'),
         free_flange_in: freeFlange.to('inch').toNumber(),
-        depth_m: depthBefore,
-        remaining_m: remaining.toNumber('m')       
+        depth_m: depthBeforeLayer,
+        remaining_m: remaining.toNumber('m')
       });
 
-      currentRadius = nextRadius; // update radius only after accepting the layer
+      currentRadius = nextRadius;
       idx++;
 
     }
@@ -1048,7 +1068,8 @@ function calculateDrumLayers(inputs) {
       freeFlange_in: finalFreeFlange.to('inch').toNumber(),
       baseWraps,
       usedCalc: !validWrap,
-      layers
+      layers,
+      wraps
     };
     console.log('calculateDrumLayers result', result)
     return result;
