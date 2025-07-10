@@ -142,7 +142,11 @@
           <input type="number" step="any" id="sel_motor_count" placeholder="6" required>
         </label>
         
-        <h2>Hydraulic</h2>
+        <h2 class="hydraulic-only">Hydraulic</h2>
+        
+        <label class="hydraulic-only">Electric Motor Power (hp)
+          <input type="number" step="any" id="sel_elec_motor_power" placeholder="50">
+        </label>
 
         <label class="hydraulic-only">Max Operating PSI
           <input type="number" step="any" id="sel_hyd_system_psi_max" placeholder="4000">
@@ -171,22 +175,18 @@
           <input type="number" step="any" id="sel_hyd_charge_pressure" placeholder="300" required>
         </label>
         
-        <h2>Electric</h2>
+        <h2 class="electric-only">Electric</h2>
 
-        <label>Motor Power (W)
+        <label class="electric-only">Motor Power (W)
           <input type="number" step="any" id="sel_motor_power" placeholder="44000" required>
         </label>
 
-         <label>Motor Torque (N·m)
+         <label class="electric-only">Motor Torque (N·m)
           <input type="number" step="any" id="sel_motor_torque" placeholder="192" required>
         </label>
 
-        <label>Motor RPM
+        <label class="electric-only">Motor RPM
           <input type="number" step="any" id="sel_motor_rpm" placeholder="2200" required>
-        </label>
-        
-        <label>Electric Motor Power (hp)
-          <input type="number" step="any" id="sel_elec_motor_power" placeholder="50">
         </label>
         
         </form>

@@ -455,7 +455,7 @@ function displayResults(results, inputs) {
       : '';
   }
 
-  drawDrumVisualization(results.layers, inputs, results.baseWraps);
+  drawDrumVisualization(results.wraps, inputs, results.baseWraps);
   }
 
 function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powerSpeed, swl, reqSpeed) {
@@ -504,7 +504,7 @@ function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powe
   });
 }
 
-function drawDrumVisualization(layers, inputs, baseWraps) {
+function drawDrumVisualization(wraps, inputs, baseWraps) {
   const canvas = document.getElementById('drumCanvas');
   if (!canvas) return;
   if (!drumCtx) drumCtx = canvas.getContext('2d');
@@ -515,7 +515,7 @@ function drawDrumVisualization(layers, inputs, baseWraps) {
   if (canvas.height !== desiredHeight) canvas.height = desiredHeight;
   drumCtx.clearRect(0, 0, canvas.width, canvas.height);
 
-  if (!layers || !layers.length) return;
+  if (!wraps || !wraps.length) return;
 
   const flangeDia = inputs.sel_drum_flange_dia;
   const flangeThickness = flangeDia / 10; // represent 1/10 of the flange diameter
@@ -559,61 +559,45 @@ function drawDrumVisualization(layers, inputs, baseWraps) {
   drumCtx.stroke();
 
     // wraps
-    drumCtx.strokeStyle = '#6d4688';
-    drumCtx.lineWidth = 1;
-    const centerY = flangeDia / 2;
-    
-    if (!baseWraps) baseWraps = layers[0] ? layers[0].wrapsEffective : 0;
-    const isHalf = Math.abs(baseWraps % 1 - 0.5) < 1e-6;
-    const baseInt = Math.floor(baseWraps);
+  drumCtx.strokeStyle = '#6d4688';
+  drumCtx.lineWidth = 1;
+  const centerY = flangeDia / 2;
 
-    let remaining = inputs.sel_cable_length || 0;
+  const spacingWhole = (flangeSpacing - cableDia) / (baseWraps - 1);
+  const spacingHalf = (flangeSpacing - cableDia / 2) / (baseWraps - 0.5);
+  const isHalf = Math.abs(baseWraps % 1 - 0.5) < 1e-6;
 
-    const spacingWhole = (flangeSpacing - cableDia) / (baseWraps - 1);
-    const spacingHalf = (flangeSpacing - cableDia / 2) / (baseWraps - 0.5);
+  wraps.forEach(wrap => {
+    const row = wrap.layer - 1;
+    const spacing = isHalf ? spacingHalf : spacingWhole;
 
-    for (let row = 0; row < layers.length && remaining > 0; row++) {
-      const wraps = isHalf
-        ? baseInt
-        : row % 2 === 0
-          ? Math.round(baseWraps)
-          : Math.max(Math.round(baseWraps) - 1, 1);
+    const offset = coreRadius + lebus + cableDia / 2 + row * vertSpacing;
+    const yTop = centerY + offset;
+    const yBottom = centerY - offset;
 
-      const spacing = isHalf ? spacingHalf : spacingWhole;
-
-      // Vertical placement for this layer:
-      const offset = coreRadius + lebus + cableDia / 2 + row * vertSpacing;
-      const yTop = centerY + offset;
-      const yBottom = centerY - offset;
-      const circumference = 2 * Math.PI * offset * 0.0254;
-
-      let startX, step;
-      if (row % 2 === 0) {
-        startX = flangeThickness + cableDia / 2;
-        step = spacing;
-      } else {
-        startX =
-          flangeThickness +
-          flangeSpacing -
-          cableDia / 2 -
-          (isHalf ? 0 : spacing / 2);
-        step = -spacing;
-      }
-
-      for (let i = 0; i < wraps && remaining > 0; i++) {
-        const x = startX + step * i;
-        const px = toX(x);
-        const r = (cableDia / 2) * scale;
-        drumCtx.beginPath();
-        drumCtx.arc(px, toY(yTop), r, 0, Math.PI * 2);
-        drumCtx.stroke();
-        drumCtx.beginPath();
-        drumCtx.arc(px, toY(yBottom), r, 0, Math.PI * 2);
-        drumCtx.stroke();
-        
-        remaining -= circumference;
-      }
+    let startX, step;
+    if (row % 2 === 0) {
+      startX = flangeThickness + cableDia / 2;
+      step = spacing;
+    } else {
+      startX =
+        flangeThickness +
+        flangeSpacing -
+        cableDia / 2 -
+        (isHalf ? 0 : spacing / 2);
+      step = -spacing;
     }
+
+   const x = startX + step * (wrap.wrap - 1);
+    const px = toX(x);
+    const r = (cableDia / 2) * scale;
+    drumCtx.beginPath();
+    drumCtx.arc(px, toY(yTop), r, 0, Math.PI * 2);
+    drumCtx.stroke();
+    drumCtx.beginPath();
+    drumCtx.arc(px, toY(yBottom), r, 0, Math.PI * 2);
+    drumCtx.stroke();
+  });
 
   }
 
