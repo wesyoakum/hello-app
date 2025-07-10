@@ -1003,7 +1003,7 @@ function calculateDrumLayers(inputs) {
     let cumulative = u(0, 'm');
     let idx = 0;
 
-    while (remaining.toNumber('m') > 0 && math.smaller(math.add(currentRadius, radInc), flangeRadius)) {
+    while (remaining.toNumber('m') > 0) {
       const wrapsEff = wrapPattern[idx % wrapPattern.length];
       const wrapsDraw = drawPattern[idx % drawPattern.length];
       const nextRadius = math.add(currentRadius, radInc);
