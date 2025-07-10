@@ -672,22 +672,22 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
   };
 
   // White contour lines overlay (no fill)
- // const contourLines1 = {
- //   x: wavePeriods1,
- //   y: vSpeeds,
- //   z: z1,
- //   type: 'contour',
-  //  contours: {
-  //    start: 0,
-  //    end: 8,
-   //   size: 1,
-//      coloring: 'lines',
- //     showlines: true
-  //  },
- //   line: { color: 'white', width: 2 }, // THICK white lines!
-  //  showscale: false,
- //   hoverinfo: 'skip'
- // };
+  const contourLines1 = {
+    x: wavePeriods1,
+    y: vSpeeds,
+    z: z1,
+    type: 'contour',
+    contours: {
+      start: 0,
+      end: 8,
+      size: 1,
+      coloring: 'lines',
+      showlines: true
+    },
+    line: { color: 'white', width: 2 }, // THICK white lines!
+    showscale: false,
+    hoverinfo: 'skip'
+  };
 
   // Overlay lines and labels
   const reqLine = {
