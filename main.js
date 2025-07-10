@@ -631,7 +631,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
 
   // custom color scales for the two contour plots
   const colorscale1 = [
-    [0 / 25, '#6d4688'], [4 / 8, '#6d4688'],
+    [0 / 8, '#6d4688'], [4 / 8, '#6d4688'],
     [4 / 8, '#68669e'], [7 / 8, '#68669e'],
     [7 / 8, '#5c82a4'], [10 / 8, '#5c82a4'],
     [10 / 8, '#519ba4'], [13 / 8, '#519ba4'],
