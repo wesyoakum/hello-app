@@ -3,13 +3,12 @@ const CONFIG_KEY = 'winch_configs';
 
 // Default configurations bundled with the app
 const DEFAULT_CONFIGS = {
-  "Default": {},
   "CTW513": {
     winch_type: "hydraulic",
     winch_model: "CTW513",
     req_swl: 13000,
     req_speed: 90,
-        wave_height: 2,
+    wave_height: 3,
     wave_period: 10,
     avg_offset_speed: 0,
     sel_umb_dia: 41,
@@ -19,7 +18,7 @@ const DEFAULT_CONFIGS = {
     sel_drum_lebus_thickness: 0.625,
     sel_drum_flange_dia: 110,
     sel_drum_flange_to_flange: 91.5,
-    sel_drum_wraps_per_layer: 56,
+    sel_drum_wraps_per_layer: 0,
     sel_payload_weight: 1537,
     sel_elec_motor_power: 150,
     sel_hyd_system_psi_max: 4000,
