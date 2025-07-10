@@ -671,7 +671,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
     hoverinfo: 'skip'
   };
 
-  // Contour lines overlay (white lines only, no fill)
+  // White contour lines overlay (no fill)
   const contourLines1 = {
     x: wavePeriods1,
     y: vSpeeds,
@@ -684,7 +684,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
       coloring: 'lines',
       showlines: true
     },
-    line: { color: 'white', width: 1 },
+    line: { color: 'white', width: 2 }, // THICK white lines!
     showscale: false,
     hoverinfo: 'skip'
   };
@@ -749,7 +749,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
     hoverinfo: 'skip'
   };
 
-  // Contour lines overlay
+  // White contour lines overlay (no fill)
   const contourLines2 = {
     x: wavePeriods2,
     y: waveHeights,
@@ -762,7 +762,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
       coloring: 'lines',
       showlines: true
     },
-    line: { color: 'white', width: 1 },
+    line: { color: 'white', width: 2 }, // THICK white lines!
     showscale: false,
     hoverinfo: 'skip'
   };
