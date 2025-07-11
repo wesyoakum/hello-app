@@ -401,8 +401,12 @@ function displayResults(results, inputs) {
     `Free Flange: ${results.freeFlange_in.toFixed(2)} in`;
 
   const tbody = document.querySelector('#resultsTable tbody');
-  results.combined.forEach(r => {
-    const row = document.createElement('tr');
+  const lastWraps = results.combined.filter((r, idx, arr) => {
+    const next = arr[idx + 1];
+    return !next || next.layer !== r.layer;
+  });
+  lastWraps.forEach(r => {
+      const row = document.createElement('tr');
     row.innerHTML =
       `<td>${r.layer}</td>` +
       `<td>${r.wrap}</td>` +
