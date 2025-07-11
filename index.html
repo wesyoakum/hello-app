@@ -73,15 +73,19 @@
         
         <h2>Active Heave Comp</h2>
         
-        <label>Wave Height (m)
-          <input type="number" step="any" id="wave_height" placeholder="2" required>
-        </label>       
+        <label>
+          <input type="checkbox" id="use_ahc" checked> Enable Active Heave
+        </label>
 
-        <label>Wave Period (s)
+        <label class="ahc-only">Wave Height (m)
+          <input type="number" step="any" id="wave_height" placeholder="2" required>
+        </label>
+
+        <label class="ahc-only">Wave Period (s)
           <input type="number" step="any" id="wave_period" placeholder="10" required>
         </label>
 
-        <label>Average Winch Offset Speed (m/min)
+        <label class="ahc-only">Average Winch Offset Speed (m/min)
           <input type="number" step="any" id="avg_offset_speed" placeholder="0" value="0" required>
         </label>
 
@@ -219,9 +223,9 @@
 
           <canvas id="tensionChart"></canvas>
           <canvas id="speedChart"></canvas>
-          <div id="required_speed"></div>
-          <div id="ahcPlot1" style="width:100%"></div>
-          <div id="ahcPlot2" style="width:100%"></div>
+          <div id="required_speed" class="ahc-output"></div>
+          <div id="ahcPlot1" class="ahc-output" style="width:100%"></div>
+          <div id="ahcPlot2" class="ahc-output" style="width:100%"></div>
         </div>
       </div>
   <script src="main.js"></script>

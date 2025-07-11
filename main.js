@@ -6,6 +6,7 @@ const DEFAULT_CONFIGS = {
   "CTW513": {
     winch_type: "hydraulic",
     winch_model: "CTW513",
+    use_ahc: true,
     req_swl: 13000,
     req_speed: 90,
     wave_height: 3,
@@ -37,9 +38,10 @@ const DEFAULT_CONFIGS = {
     sel_hyd_pump_displacement: 210,
     sel_hyd_charge_pressure: 300
   },
-    "Fugro Arjo": {
+  "Fugro Arjo": {
       winch_type: "hydraulic",
       winch_model: "TBD",
+      use_ahc: true,
       req_swl: 1000,
       req_speed: 63,
       wave_height: 3.5,
@@ -257,6 +259,14 @@ function updateFieldVisibility() {
   document.querySelectorAll('.hydraulic-only').forEach(el => {
     el.style.display = type === 'hydraulic' ? 'block' : 'none';
   });
+    const useAhc = document.getElementById('use_ahc');
+  const ahcOn = useAhc ? useAhc.checked : false;
+  document.querySelectorAll('.ahc-only').forEach(el => {
+    el.style.display = ahcOn ? 'block' : 'none';
+  });
+  document.querySelectorAll('.ahc-output').forEach(el => {
+    el.style.display = ahcOn ? 'block' : 'none';
+  });
 }
 
 function getStringValue(id) {
@@ -271,14 +281,16 @@ function getNumericValue(id) {
   return isNaN(num) ? null : num;
 }
 function readInputs() {
+  const ahcOn = document.getElementById('use_ahc')?.checked || false;
   return {
     winch_type: getStringValue('winch_type'),
     winch_model: getStringValue('winch_model'),
+        use_ahc: ahcOn,
     req_swl: getNumericValue('req_swl'),
     req_speed: getNumericValue('req_speed'),
-      wave_height: getNumericValue('wave_height'),
-    wave_period: getNumericValue('wave_period'),
-    avg_offset_speed: getNumericValue('avg_offset_speed'),
+    wave_height: ahcOn ? getNumericValue('wave_height') : 0,
+    wave_period: ahcOn ? getNumericValue('wave_period') : 0,
+    avg_offset_speed: ahcOn ? getNumericValue('avg_offset_speed') : 0,
     sel_umb_dia: getNumericValue('sel_umb_dia'),
     sel_cable_length: getNumericValue('sel_cable_length'),
     sel_umb_weight: getNumericValue('sel_umb_weight'),
@@ -311,15 +323,23 @@ function fillInputs(data) {
   for (const key in data) {
     const field = document.getElementById(key);
     if (field && data[key] !== undefined) {
-      field.value = data[key];
-    }
+      if (field.type === 'checkbox') {
+        field.checked = data[key];
+      } else {
+        field.value = data[key];
+      }
+          }
   }
 }
 
 function clearInputs() {
   document.querySelectorAll('#inputForm input, #inputForm select').forEach(el => {
-    el.value = '';
-  });
+    if (el.type === 'checkbox') {
+      el.checked = false;
+    } else {
+      el.value = '';
+    }
+      });
 }
 
 function populateConfigSelect() {
@@ -362,13 +382,19 @@ function clearResults() {
   const note = document.getElementById('wraps_note');
   if (note) note.textContent = '';
   const reqDiv = document.getElementById('required_speed');
-  if (reqDiv) reqDiv.textContent = '';  if (note) note.textContent = '';
-  const plot1 = document.getElementById('ahcPlot1');
+  if (reqDiv) {
+    reqDiv.textContent = '';
+    reqDiv.style.display = 'none';
+  }
+  if (note) note.textContent = '';
+    const plot1 = document.getElementById('ahcPlot1');
   const plot2 = document.getElementById('ahcPlot2');
   if (typeof Plotly !== 'undefined') {
     if (plot1) Plotly.purge(plot1);
     if (plot2) Plotly.purge(plot2);
   }
+    if (plot1) plot1.style.display = 'none';
+  if (plot2) plot2.style.display = 'none';
 }
 
 /**
@@ -442,16 +468,34 @@ function displayResults(results, inputs) {
   );
   
   const availSpeedsMs = results.combined.map(r => r.actual_speed_mpm / 60).slice().reverse();
-  const ahcReq = calculateRequiredAHCSpeed(
-    inputs.wave_height,
-    inputs.wave_period,
-    inputs.avg_offset_speed
-  );
   const reqDiv = document.getElementById('required_speed');
-  if (reqDiv) {
-    reqDiv.textContent = `Required AHC Speed: ${ahcReq.requiredSpeed_mpm.toFixed(2)} m/min (${ahcReq.requiredSpeed_mps.toFixed(2)} m/s)`;
-  }
-  plotAhcPerformance(ahcReq.requiredSpeed_mps, availSpeedsMs);
+const plot1 = document.getElementById('ahcPlot1');
+  const plot2 = document.getElementById('ahcPlot2');
+  if (inputs.use_ahc) {
+    const ahcReq = calculateRequiredAHCSpeed(
+      inputs.wave_height,
+      inputs.wave_period,
+      inputs.avg_offset_speed
+    );
+    if (reqDiv) {
+      reqDiv.style.display = 'block';
+      reqDiv.textContent = `Required AHC Speed: ${ahcReq.requiredSpeed_mpm.toFixed(2)} m/min (${ahcReq.requiredSpeed_mps.toFixed(2)} m/s)`;
+    }
+    if (plot1) plot1.style.display = 'block';
+    if (plot2) plot2.style.display = 'block';
+    plotAhcPerformance(ahcReq.requiredSpeed_mps, availSpeedsMs);
+  } else {
+    if (reqDiv) {
+      reqDiv.textContent = '';
+      reqDiv.style.display = 'none';
+    }
+    if (typeof Plotly !== 'undefined') {
+      if (plot1) Plotly.purge(plot1);
+      if (plot2) Plotly.purge(plot2);
+    }
+    if (plot1) plot1.style.display = 'none';
+    if (plot2) plot2.style.display = 'none';
+    }
   const note = document.getElementById('wraps_note');
   if (note) {
     note.textContent = results.usedCalc

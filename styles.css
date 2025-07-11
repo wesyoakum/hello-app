@@ -64,8 +64,9 @@ pre {
     }
 
 .electric-only,
-.hydraulic-only {
-  display: none;
+.hydraulic-only,
+.ahc-only,
+.ahc-output {  display: none;
 }
 
 table {
