@@ -557,7 +557,7 @@ function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powe
     data: {
       labels: depths,
       datasets: [
-        { label: 'Available Speed (m/min)', data: actualSpeed, borderColor: '#dfe747', fill: false, pointRadius: 0  },        { label: 'RPM Limited Speed (m/min)', data: rpmSpeed, borderColor: '#6d4688', borderDash: [5,5], fill: false, pointRadius: 0  },
+        { label: 'Available Speed (m/min)', data: actualSpeed, borderColor: '#5c82a4', fill: false, pointRadius: 0  },        { label: 'RPM Limited Speed (m/min)', data: rpmSpeed, borderColor: '#6d4688', borderDash: [5,5], fill: false, pointRadius: 0  },
         { label: 'Power Limited Speed (m/min)', data: powerSpeed, borderColor: '#65c98f', borderDash: [5,5], fill: false, pointRadius: 0  },
         { label: 'Required Speed', data: depths.map(() => reqSpeed), borderColor: 'gray', borderDash: [5,5], fill: false, pointRadius: 0 }
       ]
