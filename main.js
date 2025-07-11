@@ -438,14 +438,14 @@ function displayResults(results, inputs) {
       `<td>${r.wrap}</td>` +
       `<td>${r.diameter_in.toFixed(2)}</td>` +
       `<td>${r.wrap_length_m.toFixed(2)}</td>` +
-      `<td>${r.cumulative_length_m.toFixed(2)}</td>` +
-      `<td>${r.depth_m.toFixed(2)}</td>` +
-      `<td>${r.tension_kgf.toFixed(1)}</td>` +
-      `<td>${r.available_tension_kgf.toFixed(1)}</td>` +
+      `<td>${r.cumulative_length_m.toFixed(0)}</td>` +
+      `<td>${r.depth_m.toFixed(0)}</td>` +
+      `<td>${r.tension_kgf.toFixed(0)}</td>` +
+      `<td>${r.available_tension_kgf.toFixed(0)}</td>` +
       `<td>${r.actual_speed_mpm.toFixed(2)}</td>` +
       `<td>${r.rpm_speed_mpm.toFixed(2)}</td>` +
       `<td>${r.power_speed_mpm.toFixed(2)}</td>` +
-      `<td>${r.required_pressure_psi !== null ? r.required_pressure_psi.toFixed(1) : '-'}</td>`;
+      `<td>${r.required_pressure_psi !== null ? r.required_pressure_psi.toFixed(0) : '-'}</td>`;
     tbody.appendChild(row);
   });
 
@@ -456,6 +456,10 @@ function displayResults(results, inputs) {
   const rpmSpeedData = results.combined.map(r => r.rpm_speed_mpm).slice().reverse();
   const powerSpeedData = results.combined.map(r => r.power_speed_mpm).slice().reverse();
 
+    const transitionDepths = results.layers
+    .map(l => ({ layer: l.layer, depth: l.depth_m }))
+    .filter(t => depths.includes(t.depth));
+
   renderCharts(
     depths,
     tensionData,
@@ -464,7 +468,8 @@ function displayResults(results, inputs) {
     rpmSpeedData,
     powerSpeedData,
     inputs.req_swl,
-    inputs.req_speed
+    inputs.req_speed,
+    transitionDepths
   );
   
   const availSpeedsMs = results.combined.map(r => r.actual_speed_mpm / 60).slice().reverse();
@@ -506,11 +511,26 @@ const plot1 = document.getElementById('ahcPlot1');
   drawDrumVisualization(results.wraps, inputs, results.baseWraps);
   }
 
-function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powerSpeed, swl, reqSpeed) {
+function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powerSpeed, swl, reqSpeed, transitions) {
   if (typeof Chart === 'undefined') return;
 
   if (tensionChart) tensionChart.destroy();
   if (speedChart) speedChart.destroy();
+
+  const tickLabels = {};
+  if (Array.isArray(transitions)) {
+    transitions.forEach(t => {
+      const idx = depths.indexOf(t.depth);
+      if (idx !== -1) {
+        tickLabels[idx] = `Layer ${t.layer}\n${Math.round(t.depth)} m`;
+      }
+    });
+  }
+
+  const xTickOptions = {
+    autoSkip: false,
+    callback: (_, i) => tickLabels[i] || ''
+  };
 
   const tctx = document.getElementById('tensionChart').getContext('2d');
   tensionChart = new Chart(tctx, {
@@ -525,7 +545,7 @@ function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powe
     },
     options: {
       scales: {
-        x: { title: { display: true, text: 'Depth (m)' } },
+        x: { title: { display: true, text: 'Depth (m)' }, ticks: xTickOptions },
         y: { title: { display: true, text: 'kgf' }, min: 0 }
       }
     }
@@ -537,8 +557,7 @@ function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powe
     data: {
       labels: depths,
       datasets: [
-        { label: 'Available Speed (m/min)', data: actualSpeed, borderColor: '#5c82a4', fill: false, pointRadius: 0  },
-        { label: 'RPM Limited Speed (m/min)', data: rpmSpeed, borderColor: '#6d4688', borderDash: [5,5], fill: false, pointRadius: 0  },
+        { label: 'Available Speed (m/min)', data: actualSpeed, borderColor: '#dfe747', fill: false, pointRadius: 0  },        { label: 'RPM Limited Speed (m/min)', data: rpmSpeed, borderColor: '#6d4688', borderDash: [5,5], fill: false, pointRadius: 0  },
         { label: 'Power Limited Speed (m/min)', data: powerSpeed, borderColor: '#65c98f', borderDash: [5,5], fill: false, pointRadius: 0  },
         { label: 'Required Speed', data: depths.map(() => reqSpeed), borderColor: 'gray', borderDash: [5,5], fill: false, pointRadius: 0 }
       ]
@@ -546,7 +565,7 @@ function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powe
     options: {
       scales: {
         x: { title: { display: true, text: 'Depth (m)' } },
-        y: { title: { display: true, text: 'Speed (m/min)' }, min: 0 }
+        x: { title: { display: true, text: 'Depth (m)' }, ticks: xTickOptions },
       }
     }
   });
@@ -701,8 +720,9 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
     colorscale: colorscale1,
     zmin: 0,
     zmax: 8,
-    colorbar: { title: 'Vertical Displacement (m)' },
-    showscale: true,
+    colorbar: {
+      title: { text: 'Vertical Displacement (m)', side: 'right' }
+    },    showscale: true,
     hoverinfo: 'skip'
   };
 
