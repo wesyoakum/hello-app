@@ -518,8 +518,8 @@ function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powe
     data: {
       labels: depths,
       datasets: [
-        { label: 'Tension (kgf)', data: tension, borderColor: '#6d4688', fill: false },
-        { label: 'Available Tension (kgf)', data: availTension, borderColor: '#4cb3a0', fill: false },
+        { label: 'Tension (kgf)', data: tension, borderColor: '#6d4688', fill: false, pointRadius: 0 },
+        { label: 'Available Tension (kgf)', data: availTension, borderColor: '#4cb3a0', fill: false, pointRadius: 0 },
         { label: 'SWL', data: depths.map(() => swl), borderColor: 'gray', borderDash: [5,5], fill: false, pointRadius: 0 }
       ]
     },
