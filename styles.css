@@ -1,5 +1,5 @@
 body {
-  font-family: sans-serif;
+  font-family: 'Roboto', sans-serif;
   padding: 30px;
   margin: auto;
   max-width: 1200px;
@@ -27,7 +27,7 @@ body {
   }
   .sidebar {
     flex: 0 0 300px;
-    margin-right: 20px;
+    margin-right: 40px;
   }
 }
 label {
@@ -82,8 +82,9 @@ th, td {
 }
 
 th {
-  background: #eee;
-}
+  background: #212121;
+  color: #fff;
+  text-align: center;}
 
 canvas {
   max-width: 100%;
@@ -95,8 +96,14 @@ canvas {
   display: block;
   margin: 0 auto;
   aspect-ratio: 4 / 3;
-  max-height: 550px;
+  max-height: 550px;    
+    flex: 0 0 55%;
 }
+
+#summary {
+  flex: 1 1 auto;
+}
+
 
 #ahcPlot1,
 #ahcPlot2 {
@@ -108,4 +115,11 @@ canvas {
   width: 100%;
   display: block;
   overflow-x: auto;
+}
+
+.summary-drum {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  justify-content: space-between;
 }

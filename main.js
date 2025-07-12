@@ -80,6 +80,21 @@ let tensionChart = null;
 let speedChart = null;
 let drumCtx = null;
 
+if (typeof Chart !== 'undefined') {
+  Chart.defaults.font.family = 'Roboto, sans-serif';
+  Chart.register({
+    id: 'bgColor',
+    beforeDraw: (chart, args, opts) => {
+      const {left, top, width, height} = chart.chartArea;
+      const ctx = chart.ctx;
+      ctx.save();
+      ctx.fillStyle = opts.color || '#212121';
+      ctx.fillRect(left, top, width, height);
+      ctx.restore();
+    }
+  });
+}
+
 function getConfigs() {
   try {
     const stored = JSON.parse(localStorage.getItem(CONFIG_KEY)) || {};
@@ -435,7 +450,6 @@ function displayResults(results, inputs) {
       const row = document.createElement('tr');
     row.innerHTML =
       `<td>${r.layer}</td>` +
-      `<td>${r.wrap}</td>` +
       `<td>${r.diameter_in.toFixed(2)}</td>` +
       `<td>${r.wrap_length_m.toFixed(2)}</td>` +
       `<td>${r.cumulative_length_m.toFixed(0)}</td>` +
@@ -545,9 +559,19 @@ function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powe
     },
     options: {
       scales: {
-        x: { title: { display: true, text: 'Depth (m)' }, ticks: xTickOptions },
-        y: { title: { display: true, text: 'kgf' }, min: 0 }
-      }
+        x: {
+          title: { display: true, text: 'Depth (m)' },
+          ticks: xTickOptions,
+          grid: { color: '#fff', lineWidth: 0.5, drawBorder: false }
+        },
+        y: {
+          title: { display: true, text: 'kgf' },
+          min: 0,
+          grid: { display: false }
+        }
+      },
+      layout: { padding: { left: 60, right: 20 } },
+      plugins: { bgColor: { color: '#212121' } }
     }
   });
 
@@ -557,16 +581,25 @@ function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powe
     data: {
       labels: depths,
       datasets: [
-        { label: 'Available Speed (m/min)', data: actualSpeed, borderColor: '#5c82a4', fill: false, pointRadius: 0  },        { label: 'RPM Limited Speed (m/min)', data: rpmSpeed, borderColor: '#6d4688', borderDash: [5,5], fill: false, pointRadius: 0  },
-        { label: 'Power Limited Speed (m/min)', data: powerSpeed, borderColor: '#65c98f', borderDash: [5,5], fill: false, pointRadius: 0  },
+        { label: 'Available Speed (m/min)', data: actualSpeed, borderColor: '#5c82a4', fill: false, pointRadius: 0 },
+        { label: 'RPM Limited Speed (m/min)', data: rpmSpeed, borderColor: '#6d4688', borderDash: [5,5], fill: false, pointRadius: 0 },
+        { label: 'Power Limited Speed (m/min)', data: powerSpeed, borderColor: '#65c98f', borderDash: [5,5], fill: false, pointRadius: 0 },
         { label: 'Required Speed', data: depths.map(() => reqSpeed), borderColor: 'gray', borderDash: [5,5], fill: false, pointRadius: 0 }
       ]
     },
     options: {
       scales: {
-        x: { title: { display: true, text: 'Depth (m)' } },
-        x: { title: { display: true, text: 'Depth (m)' }, ticks: xTickOptions },
-      }
+        x: {
+          title: { display: true, text: 'Depth (m)' },
+          ticks: xTickOptions,
+          grid: { color: '#fff', lineWidth: 0.5, drawBorder: false }
+        },
+        y: {
+          grid: { display: false }
+        }
+      },
+      layout: { padding: { left: 60, right: 20 } },
+      plugins: { bgColor: { color: '#212121' } }
     }
   });
 }
@@ -585,7 +618,7 @@ function drawDrumVisualization(wraps, inputs, baseWraps) {
   if (!wraps || !wraps.length) return;
 
   const flangeDia = inputs.sel_drum_flange_dia;
-  const flangeThickness = flangeDia / 10; // represent 1/10 of the flange diameter
+  const flangeThickness = flangeDia * 0.01;
   const cableDia = inputs.sel_umb_dia / 25.4; // mm to in
   const flangeSpacing = inputs.sel_drum_flange_to_flange;
   const coreDia = inputs.sel_drum_core_dia;
@@ -614,6 +647,20 @@ function drawDrumVisualization(wraps, inputs, baseWraps) {
 
   drumCtx.beginPath();
   drumCtx.rect(toX(flangeSpacing + flangeThickness), toY(flangeDia), flangeThickness * scale, flangeDia * scale);
+  drumCtx.fill();
+  drumCtx.stroke();
+  
+    const extWidth = flangeDia * 0.06;
+  const extHeight = flangeDia * 0.98;
+  const extY = (flangeDia - extHeight) / 2;
+
+  drumCtx.beginPath();
+  drumCtx.rect(toX(-extWidth), toY(extY + extHeight), extWidth * scale, extHeight * scale);
+  drumCtx.fill();
+  drumCtx.stroke();
+
+  drumCtx.beginPath();
+  drumCtx.rect(toX(flangeSpacing + 2 * flangeThickness), toY(extY + extHeight), extWidth * scale, extHeight * scale);
   drumCtx.fill();
   drumCtx.stroke();
 
@@ -748,7 +795,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
     text: `Layer ${i + 1}`,
     xanchor: 'right',
     yanchor: 'middle',
-    font: { color: 'white', size: 11, family: 'sans-serif', weight: 'bold' },
+    font: { color: 'white', size: 11, family: 'Roboto, sans-serif', weight: 'bold' },
     showarrow: false
   }));
 
@@ -760,7 +807,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
       xaxis: { title: 'Wave Period (s)', range: [8, 12], gridcolor: 'rgba(0,0,0,0.1)', color: '#111' },
       yaxis: { title: 'Maximum Vertical Speed (m/s)', range: [0, 2.5], gridcolor: 'rgba(0,0,0,0.1)', color: '#111' },
       annotations: availLabels,
-      font: { family: 'sans-serif', color: '#111', size: 14 },
+      font: { family: 'Roboto, sans-serif', color: '#111', size: 14 },
       plot_bgcolor: '#fff',
       paper_bgcolor: '#fff',
       margin: { l: 60, r: 30, b: 60, t: 70 }
@@ -782,7 +829,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
     colorscale: colorscale2,
     zmin: 0,
     zmax: 4,
-    colorbar: { title: 'Maximum Vertical Speed (m/s)' },
+    colorbar: { title: { text: 'Maximum Vertical Speed (m/s)', side: 'right' } },
     showscale: true,
     hoverinfo: 'skip'
   };
@@ -825,19 +872,6 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
     };
   });
 
-  const availContourLabels = availSpeeds.map((s, i) => {
-    const T = 15.8;
-    const H = s * T / Math.PI;
-    return {
-      x: T,
-      y: H,
-      text: `Layer ${i + 1}`,
-      xanchor: 'right',
-      yanchor: 'middle',
-      font: { color: 'white', size: 11, family: 'sans-serif', weight: 'bold' },
-      showarrow: false
-    };
-  });
 
   Plotly.newPlot(
     'ahcPlot2',
@@ -846,8 +880,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
       title: 'Max Vertical Speed vs Wave Period & Vertical Displacement',
       xaxis: { title: 'Wave Period (s)', range: [4, 16], gridcolor: 'rgba(0,0,0,0.1)', color: '#111' },
       yaxis: { title: 'Vertical Displacement (m)', range: [0, 8], gridcolor: 'rgba(0,0,0,0.1)', color: '#111' },
-      annotations: availContourLabels,
-      font: { family: 'sans-serif', color: '#111', size: 14 },
+      font: { family: 'Roboto, sans-serif', color: '#111', size: 14 },
       plot_bgcolor: '#fff',
       paper_bgcolor: '#fff',
       margin: { l: 60, r: 30, b: 60, t: 70 }
