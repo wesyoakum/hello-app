@@ -1,10 +1,20 @@
+:root {
+  --bg-color: #343541;
+  --box-bg-color: #444654;
+  --text-color: #ececf1;
+  --accent-color: #10a37f;
+  --code-bg-color: #202123;
+  --border-radius: 6px;
+}
+
 body {
   font-family: 'Roboto', sans-serif;
   padding: 30px;
   margin: auto;
   max-width: 1200px;
-  background: #f9f9f9;
-}
+  background: var(--bg-color);
+  color: var(--text-color);
+  }
 
 .layout {
   display: flex;
@@ -14,10 +24,16 @@ body {
 
 .sidebar {
   flex: 0 0 100%;
+    background: var(--box-bg-color);
+  padding: 20px;
+  border-radius: var(--border-radius);
 }
 
 .main {
   flex: 1 1 auto;
+    background: var(--box-bg-color);
+  padding: 20px;
+  border-radius: var(--border-radius);
 }
 
 @media (min-width: 768px) {
@@ -31,37 +47,63 @@ body {
   }
 }
 label {
-      display: block;
-      margin-top: 15px;
-      font-weight: bold;
-    }
+  display: block;
+  margin-top: 15px;
+  font-weight: bold;
+}
+
+h1, h2, h3 {
+  color: var(--text-color);
+  margin-top: 0;
+}
+
+code {
+  color: #f1f2f4;
+  font-family: "Courier New", monospace;
+}
 input {
-      width: 100%;
-      padding: 8px;
-      font-size: 16px;
-      margin-top: 5px;
-    }
-select {      
-      width: 100%;
-      padding: 8px;
-      font-size: 16px;
-      margin-top: 5px;
-    }
+  width: 100%;
+  padding: 8px;
+  font-size: 16px;
+  margin-top: 5px;
+  background: var(--box-bg-color);
+  color: var(--text-color);
+  border: 1px solid #565869;
+  border-radius: var(--border-radius);
+}
+
+select {
+  width: 100%;
+  padding: 8px;
+  font-size: 16px;
+  margin-top: 5px;
+  background: var(--box-bg-color);
+  color: var(--text-color);
+  border: 1px solid #565869;
+  border-radius: var(--border-radius);
+}
+
 button {
-      margin-top: 25px;
-      padding: 10px 20px;
-      font-size: 16px;
-    }
+  margin-top: 25px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background: var(--accent-color);
+  color: #fff;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+}
 #configControls button {
-      margin-top: 10px;
-      margin-right: 5px;
-      }
+  margin-top: 10px;
+  margin-right: 5px;
+}
 pre {
-      background: #eee;
-      padding: 15px;
-      border-radius: 5px;
-      white-space: pre-wrap;
-    }
+  background: var(--code-bg-color);
+  padding: 15px;
+  border-radius: var(--border-radius);
+  white-space: pre-wrap;
+  color: var(--text-color);
+}
 
 .electric-only,
 .hydraulic-only,
@@ -73,18 +115,20 @@ table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
+    color: var(--text-color);
 }
 
 th, td {
-  border: 1px solid #ccc;
+  border: 1px solid #565869;
   padding: 8px;
   text-align: right;
 }
 
 th {
-  background: #212121;
-  color: #fff;
-  text-align: center;}
+  background: var(--box-bg-color);
+  color: var(--text-color);
+  text-align: center;
+}
 
 canvas {
   max-width: 100%;
@@ -115,6 +159,7 @@ canvas {
   width: 100%;
   display: block;
   overflow-x: auto;
+    border-radius: var(--border-radius);
 }
 
 .summary-drum {
@@ -122,4 +167,7 @@ canvas {
   gap: 20px;
   align-items: flex-start;
   justify-content: space-between;
+    background: var(--box-bg-color);
+  padding: 20px;
+  border-radius: var(--border-radius);
 }
