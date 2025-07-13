@@ -546,7 +546,7 @@ function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powe
     callback: (_, i) => tickLabels[i] || ''
   };
     const xGridOptions = {
-    color: ctx => (tickLabels[ctx.index] ? '#fff' : 'transparent'),
+    color: ctx => (tickLabels[ctx.index] ? '#666' : 'transparent'),
     lineWidth: 0.5,
     drawBorder: false
   };
