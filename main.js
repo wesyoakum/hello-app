@@ -545,6 +545,11 @@ function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powe
     autoSkip: false,
     callback: (_, i) => tickLabels[i] || ''
   };
+    const xGridOptions = {
+    color: ctx => (tickLabels[ctx.index] ? '#fff' : 'transparent'),
+    lineWidth: 0.5,
+    drawBorder: false
+  };
 
   const tctx = document.getElementById('tensionChart').getContext('2d');
   tensionChart = new Chart(tctx, {
@@ -592,7 +597,7 @@ function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powe
         x: {
           title: { display: true, text: 'Depth (m)' },
           ticks: xTickOptions,
-          grid: { color: '#fff', lineWidth: 0.5, drawBorder: false }
+          grid: xGridOptions
         },
         y: {
           grid: { display: false }
@@ -880,8 +885,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
       title: 'Max Vertical Speed vs Wave Period & Vertical Displacement',
       xaxis: { title: 'Wave Period (s)', range: [4, 16], gridcolor: 'rgba(0,0,0,0.1)', color: '#111' },
       yaxis: { title: 'Vertical Displacement (m)', range: [0, 8], gridcolor: 'rgba(0,0,0,0.1)', color: '#111' },
-      font: { family: 'Roboto, sans-serif', color: '#111', size: 14 },
-      plot_bgcolor: '#fff',
+      font: { family: 'Roboto, sans-serif', color: '#111', size: 14 },      plot_bgcolor: '#fff',
       paper_bgcolor: '#fff',
       margin: { l: 60, r: 30, b: 60, t: 70 }
     },
