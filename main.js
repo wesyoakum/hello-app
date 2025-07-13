@@ -567,7 +567,7 @@ function renderCharts(depths, tension, availTension, actualSpeed, rpmSpeed, powe
         x: {
           title: { display: true, text: 'Depth (m)' },
           ticks: xTickOptions,
-          grid: { color: '#fff', lineWidth: 0.5, drawBorder: false }
+          grid: xGridOptions
         },
         y: {
           title: { display: true, text: 'kgf' },
