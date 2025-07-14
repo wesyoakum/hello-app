@@ -36,8 +36,10 @@ const DEFAULT_CONFIGS = {
     sel_elec_motor_rpm: 1780,
     sel_hyd_num_pumps: 2,
     sel_hyd_pump_displacement: 210,
-    sel_hyd_charge_pressure: 300
-  },
+    sel_hyd_charge_pressure: 300,
+    show_contours: true,
+    show_req_line: true
+      },
   "Fugro Arjo": {
       winch_type: "hydraulic",
       winch_model: "TBD",
@@ -71,8 +73,10 @@ const DEFAULT_CONFIGS = {
       sel_elec_motor_rpm: 1780,
       sel_hyd_num_pumps: 2,
       sel_hyd_pump_displacement: 210,
-      sel_hyd_charge_pressure: 300
-   }
+      sel_hyd_charge_pressure: 300,
+      show_contours: true,
+      show_req_line: true
+         }
 };
 
 
@@ -306,6 +310,8 @@ function readInputs() {
     wave_height: ahcOn ? getNumericValue('wave_height') : 0,
     wave_period: ahcOn ? getNumericValue('wave_period') : 0,
     avg_offset_speed: ahcOn ? getNumericValue('avg_offset_speed') : 0,
+        show_contours: document.getElementById('ahc_show_contours')?.checked ?? true,
+    show_req_line: document.getElementById('ahc_show_req')?.checked ?? true,
     sel_umb_dia: getNumericValue('sel_umb_dia'),
     sel_cable_length: getNumericValue('sel_cable_length'),
     sel_umb_weight: getNumericValue('sel_umb_weight'),
@@ -502,8 +508,11 @@ const plot1 = document.getElementById('ahcPlot1');
     }
     if (plot1) plot1.style.display = 'block';
     if (plot2) plot2.style.display = 'block';
-    plotAhcPerformance(ahcReq.requiredSpeed_mps, availSpeedsMs);
-  } else {
+    plotAhcPerformance(ahcReq.requiredSpeed_mps, availSpeedsMs, {
+      showContours: inputs.show_contours,
+      showReqLine: inputs.show_req_line
+    });
+      } else {
     if (reqDiv) {
       reqDiv.textContent = '';
       reqDiv.style.display = 'none';
@@ -731,8 +740,11 @@ function linspace(start, end, count) {
   }
   return result;
 }
-function plotAhcPerformance(reqSpeed, availSpeeds) {
+function plotAhcPerformance(reqSpeed, availSpeeds, opts = {}) {
   if (typeof Plotly === 'undefined') return;
+
+  const showContours = opts.showContours !== false;
+  const showReq = opts.showReqLine !== false;
 
   // Custom color scales for the two plots
   const colorscale1 = [
@@ -759,7 +771,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
   ];
 
   // --- First Plot ---
-  const wavePeriods1 = linspace(8, 12, 300);
+  const wavePeriods1 = linspace(8, 20, 300);
   const vSpeeds = linspace(0, 2.5, 300);
   const z1 = vSpeeds.map(v => wavePeriods1.map(T => v * T / Math.PI));
 
@@ -771,7 +783,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
     type: 'heatmap',
     colorscale: colorscale1,
     zmin: 0,
-    zmax: 8,
+    zmax: 12,
     colorbar: {
       title: { text: 'Vertical Displacement (m)', side: 'right' }
     },    showscale: true,
@@ -781,21 +793,21 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
 
    // Overlay lines and labels
   const reqLine = {
-    x: [8, 12],
+    x: [8, 20],
     y: [reqSpeed, reqSpeed],
     mode: 'lines',
     line: { color: 'white', width: 2 },
     showlegend: false
   };
   const availLines = availSpeeds.map(s => ({
-    x: [8, 12],
+    x: [8, 20],
     y: [s, s],
     mode: 'lines',
     line: { color: 'white', width: 1, dash: 'dash' },
     showlegend: false
   }));
   const availLabels = availSpeeds.map((s, i) => ({
-    x: 11.85,
+    x: 19.85,
     y: s,
     text: `Layer ${i + 1}`,
     xanchor: 'right',
@@ -804,14 +816,18 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
     showarrow: false
   }));
 
+  const plot1Data = [heatmap1];
+  if (showReq) plot1Data.push(reqLine);
+  if (showContours) plot1Data.push(...availLines);
+
   Plotly.newPlot(
     'ahcPlot1',
-    [heatmap1, reqLine, ...availLines],
+    plot1Data,
     {
       title: 'Vertical Displacement vs Wave Period & Max Vertical Speed',
-      xaxis: { title: 'Wave Period (s)', range: [8, 12], gridcolor: 'rgba(0,0,0,0.1)', color: '#111' },
+      xaxis: { title: 'Wave Period (s)', range: [8, 20], gridcolor: 'rgba(0,0,0,0.1)', color: '#111' },
       yaxis: { title: 'Maximum Vertical Speed (m/s)', range: [0, 2.5], gridcolor: 'rgba(0,0,0,0.1)', color: '#111' },
-      annotations: availLabels,
+      annotations: showContours ? availLabels : [],
       font: { family: 'Roboto, sans-serif', color: '#111', size: 14 },
       plot_bgcolor: '#fff',
       paper_bgcolor: '#fff',
@@ -821,8 +837,8 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
   );
 
   // --- Second Plot ---
-  const waveHeights = linspace(0, 8, 300);
-  const wavePeriods2 = linspace(4, 16, 300);
+  const waveHeights = linspace(0, 12, 300);
+  const wavePeriods2 = linspace(4, 20, 300);
   const z2 = waveHeights.map(h => wavePeriods2.map(T => Math.PI * h / T));
 
   // Heatmap for color fill
@@ -845,7 +861,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
   const reqIsoY = [];
   wavePeriods2.forEach(T => {
     const H = reqSpeed * T / Math.PI;
-    if (H >= 0 && H <= 8) {
+    if (H >= 0 && H <= 12) {
       reqIsoX.push(T);
       reqIsoY.push(H);
     }
@@ -863,7 +879,7 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
     const ys = [];
     wavePeriods2.forEach(T => {
       const H = s * T / Math.PI;
-      if (H >= 0 && H <= 8) {
+      if (H >= 0 && H <= 12) {
         xs.push(T);
         ys.push(H);
       }
@@ -878,13 +894,17 @@ function plotAhcPerformance(reqSpeed, availSpeeds) {
   });
 
 
+  const plot2Data = [heatmap2];
+  if (showReq) plot2Data.push(reqIso);
+  if (showContours) plot2Data.push(...availContours);
+
   Plotly.newPlot(
     'ahcPlot2',
-    [heatmap2, reqIso, ...availContours],
+    plot2Data,
     {
       title: 'Max Vertical Speed vs Wave Period & Vertical Displacement',
-      xaxis: { title: 'Wave Period (s)', range: [4, 16], gridcolor: 'rgba(0,0,0,0.1)', color: '#111' },
-      yaxis: { title: 'Vertical Displacement (m)', range: [0, 8], gridcolor: 'rgba(0,0,0,0.1)', color: '#111' },
+      xaxis: { title: 'Wave Period (s)', range: [4, 20], gridcolor: 'rgba(0,0,0,0.1)', color: '#111' },
+      yaxis: { title: 'Vertical Displacement (m)', range: [0, 12], gridcolor: 'rgba(0,0,0,0.1)', color: '#111' },
       font: { family: 'Roboto, sans-serif', color: '#111', size: 14 },      plot_bgcolor: '#fff',
       paper_bgcolor: '#fff',
       margin: { l: 60, r: 30, b: 60, t: 70 }
