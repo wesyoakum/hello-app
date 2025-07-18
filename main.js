@@ -360,8 +360,10 @@ function clearInputs() {
     } else {
       el.value = '';
     }
-      });
-}
+  });
+  const ahcBox = document.getElementById('use_ahc');
+  if (ahcBox) ahcBox.checked = true;
+  }
 
 function populateConfigSelect() {
   const select = document.getElementById('configSelect');
