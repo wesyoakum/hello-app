@@ -492,8 +492,11 @@ function displayResults(results, inputs) {
     transitionDepths
   );
   
-  const availSpeedsMs = results.combined.map(r => r.actual_speed_mpm / 60).slice().reverse();
-  const reqDiv = document.getElementById('required_speed');
+  const availSpeedsMs = lastWraps
+    .map(r => ({ layer: r.layer, speed: r.actual_speed_mpm / 60 }))
+    .slice()
+    .reverse();
+      const reqDiv = document.getElementById('required_speed');
 const plot1 = document.getElementById('ahcPlot1');
   const plot2 = document.getElementById('ahcPlot2');
   if (inputs.use_ahc) {
@@ -799,17 +802,17 @@ function plotAhcPerformance(reqSpeed, availSpeeds, opts = {}) {
     line: { color: 'white', width: 2 },
     showlegend: false
   };
-  const availLines = availSpeeds.map(s => ({
+  const availLines = availSpeeds.map(d => ({
     x: [8, 20],
-    y: [s, s],
+    y: [d.speed, d.speed],
     mode: 'lines',
     line: { color: 'white', width: 1, dash: 'dash' },
     showlegend: false
   }));
-  const availLabels = availSpeeds.map((s, i) => ({
+  const availLabels = availSpeeds.map(d => ({
     x: 19.85,
-    y: s,
-    text: `Layer ${i + 1}`,
+    y: d.speed,
+    text: `Layer ${d.layer}`,
     xanchor: 'right',
     yanchor: 'middle',
     font: { color: 'white', size: 11, family: 'Roboto, sans-serif', weight: 'bold' },
@@ -874,8 +877,9 @@ function plotAhcPerformance(reqSpeed, availSpeeds, opts = {}) {
     showlegend: false
   };
 
-  const availContours = availSpeeds.map(s => {
-    const xs = [];
+  const availContours = availSpeeds.map(d => {
+    const s = d.speed;
+        const xs = [];
     const ys = [];
     wavePeriods2.forEach(T => {
       const H = s * T / Math.PI;
