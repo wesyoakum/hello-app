@@ -1085,7 +1085,7 @@ function calculateDrumLayers(inputs) {
     const coreDia = u(inputs.sel_drum_core_dia, 'inch');
     const lebusThickness = u(inputs.sel_drum_lebus_thickness, 'inch');
     const cableLength = u(inputs.sel_cable_length, 'm');
-    const availableLength = math.subtract(cableLength, u(300, 'm'));
+    const availableLength = math.subtract(cableLength, u(0, 'm'));
 
     const reqFreeFlange = cableDia.multiply(2.5);
     const flangeRadius = flangeDia.divide(2);
